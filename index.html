@@ -1,155 +1,215 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
-import { motion } from "framer-motion";
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clima Mundial</title>
+    <style>
+        /* Reset de estilos predeterminados */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-export default function WeatherApp() {
-  const [location, setLocation] = useState("");
-  const [weather, setWeather] = useState(null);
-  const [useFahrenheit, setUseFahrenheit] = useState(false);
-  const [recentSearches, setRecentSearches] = useState([]);
-  const [backgroundClass, setBackgroundClass] = useState("bg-blue-600");
+        /* Estilos globales */
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-  useEffect(() => {
-    const savedLocation = localStorage.getItem("lastLocation");
-    const savedSearches = JSON.parse(localStorage.getItem("recentSearches")) || [];
-    setRecentSearches(savedSearches);
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
 
-    if (savedLocation) {
-      setLocation(savedLocation);
-      fetchWeather(savedLocation);
-    }
-  }, []);
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-  const updateRecentSearches = (newLocation) => {
-    let updated = [newLocation, ...recentSearches.filter((loc) => loc !== newLocation)].slice(0, 5);
-    setRecentSearches(updated);
-    localStorage.setItem("recentSearches", JSON.stringify(updated));
-  };
+        header h1 {
+            font-size: 3rem;
+            color: #333;
+        }
 
-  const setDynamicBackground = (conditionText) => {
-    if (conditionText.includes("rain")) setBackgroundClass("bg-gray-700");
-    else if (conditionText.includes("cloud")) setBackgroundClass("bg-gray-500");
-    else if (conditionText.includes("sun") || conditionText.includes("clear"))
-      setBackgroundClass("bg-yellow-400");
-    else setBackgroundClass("bg-blue-600");
-  };
+        header p {
+            color: #555;
+            font-size: 1.2rem;
+        }
 
-  const fetchWeather = async (loc = location) => {
-    if (!loc) return;
-    try {
-      const res = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=a35443852cbb4454b61194436252504&q=${loc}&days=7&aqi=yes&alerts=yes&lang=es`);
-      const data = await res.json();
-      setWeather(data);
-      localStorage.setItem("lastLocation", loc);
-      setDynamicBackground(data.current.condition.text.toLowerCase());
-      updateRecentSearches(loc);
-    } catch (error) {
-      console.error("Error fetching weather data:", error);
-    }
-  };
+        .search-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
 
-  const toggleUnits = () => setUseFahrenheit(!useFahrenheit);
+        #locationInput {
+            width: 70%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
 
-  return (
-    <div className={`min-h-screen text-white ${backgroundClass} py-12 px-6`}>
-      <header className="text-center mb-8">
-        <h1 className="text-5xl font-semibold mb-2">Clima Mundial</h1>
-        <p className="text-xl">Equipo: Lopez Martínez Jacobo</p>
-      </header>
+        #searchButton, #unitToggle {
+            padding: 10px 15px;
+            font-size: 1rem;
+            background-color: #ff7f00;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
-      <div className="flex justify-center mb-6 gap-4">
-        <Input
-          placeholder="Buscar ciudad o localidad"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          className="max-w-xs text-black p-2 rounded-md shadow-md"
-        />
-        <Button
-          onClick={() => fetchWeather()}
-          className="bg-orange-500 text-white hover:bg-orange-600 flex items-center justify-center p-2 rounded-md shadow-md"
-        >
-          <Search className="mr-2 h-5 w-5" />
-          Buscar
-        </Button>
-        <Button
-          onClick={toggleUnits}
-          className="bg-gray-800 text-white hover:bg-gray-700 p-2 rounded-md shadow-md"
-        >
-          Mostrar en °{useFahrenheit ? "C" : "F"}
-        </Button>
-      </div>
+        #searchButton:hover, #unitToggle:hover {
+            background-color: #ff5500;
+        }
 
-      {recentSearches.length > 0 && (
-        <div className="text-center mb-8">
-          <p className="text-sm">Búsquedas recientes:</p>
-          <div className="flex flex-wrap justify-center gap-2 mt-2">
-            {recentSearches.map((city, i) => (
-              <Button
-                key={i}
-                onClick={() => fetchWeather(city)}
-                className="bg-white/10 hover:bg-white/20 text-sm px-3"
-              >
-                {city}
-              </Button>
-            ))}
-          </div>
+        .weather-info, .forecast {
+            margin-top: 20px;
+        }
+
+        .weather-info h2 {
+            font-size: 2rem;
+        }
+
+        .weather-info p {
+            font-size: 1.2rem;
+        }
+
+        .forecast h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .forecast .forecast-day {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .radar {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        iframe {
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Clima Mundial</h1>
+            <p>Equipo: Lopez Martínez Jacobo</p>
+        </header>
+
+        <div class="search-container">
+            <input type="text" id="locationInput" placeholder="Buscar ciudad o localidad" />
+            <button id="searchButton">Buscar</button>
+            <button id="unitToggle">°C / °F</button>
         </div>
-      )}
 
-      {weather && (
-        <motion.div
-          className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Card className="bg-white/20 p-6 rounded-xl shadow-xl border border-gray-200">
-            <CardContent>
-              <h2 className="text-2xl font-bold mb-2">{weather.location.name}, {weather.location.country}</h2>
-              <p className="text-lg">Temperatura: {useFahrenheit ? weather.current.temp_f : weather.current.temp_c}°{useFahrenheit ? "F" : "C"}</p>
-              <p className="text-lg">Condición: {weather.current.condition.text}</p>
-              <img src={weather.current.condition.icon} alt="condición" className="w-16 my-2" />
-              <p className="text-lg">Humedad: {weather.current.humidity}%</p>
-              <p className="text-lg">Viento: {useFahrenheit ? weather.current.wind_mph : weather.current.wind_kph} {useFahrenheit ? "mph" : "km/h"}</p>
-              <p className="text-lg">Índice UV: {weather.current.uv}</p>
-              {weather.alerts?.alert?.length > 0 && (
-                <div className="mt-4 p-2 bg-red-600 text-white rounded-lg">
-                  <p className="font-semibold">Alerta:</p>
-                  <p>{weather.alerts.alert[0].headline}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/20 p-6 rounded-xl shadow-xl border border-gray-200">
-            <CardContent>
-              <h2 className="text-2xl font-bold mb-2">Pronóstico para los próximos días</h2>
-              {weather.forecast.forecastday.map((day, i) => (
-                <div key={i} className="flex justify-between items-center border-b border-white/30 py-2">
-                  <span>{day.date}</span>
-                  <span>{useFahrenheit ? day.day.avgtemp_f : day.day.avgtemp_c}°{useFahrenheit ? "F" : "C"}</span>
-                  <img src={day.day.condition.icon} alt="icon" className="w-10" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
-      <footer className="mt-12 text-center">
-        <h2 className="text-3xl font-semibold mb-4">Radar en Vivo</h2>
-        <div className="w-full max-w-4xl mx-auto aspect-video">
-          <iframe
-            className="w-full h-full rounded-xl shadow-lg"
-            src="https://embed.windy.com/embed2.html?lat=20&lon=0&detailLat=20&detailLon=0&width=650&height=450&zoom=2&level=surface&overlay=rain&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1"
-            frameBorder="0"
-            allowFullScreen
-          ></iframe>
+        <div id="weatherInfo" class="weather-info">
+            <!-- Información del clima se mostrará aquí -->
         </div>
-      </footer>
+
+        <div id="forecast" class="forecast">
+            <!-- Pronóstico del clima -->
+        </div>
+
+        <div id="radar" class="radar">
+            <h2>Radar en Vivo</h2>
+            <iframe src="https://embed.windy.com/embed2.html?lat=20&lon=0&detailLat=20&detailLon=0&width=650&height=450&zoom=2&level=surface&overlay=rain&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1" width="100%" height="450px"></iframe>
+        </div>
     </div>
-  );
-}
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.getElementById("searchButton").addEventListener("click", fetchWeather);
+        document.getElementById("unitToggle").addEventListener("click", toggleUnits);
+
+        let useFahrenheit = false;  // Inicialmente usa Celsius
+
+        // Función para buscar y mostrar el clima
+        function fetchWeather() {
+            const location = document.getElementById("locationInput").value;
+            if (!location) return;
+
+            const apiKey = 'a35443852cbb4454b61194436252504';  // API Key de WeatherAPI
+            const url = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${location}&days=7&aqi=yes&alerts=yes&lang=es`;
+
+            axios.get(url)
+                .then(response => {
+                    const weather = response.data;
+                    displayWeatherInfo(weather);
+                    displayForecast(weather.forecast.forecastday);
+                })
+                .catch(error => {
+                    alert("No se pudo obtener la información del clima. Intenta de nuevo.");
+                    console.error(error);
+                });
+        }
+
+        // Función para mostrar la información del clima actual
+        function displayWeatherInfo(weather) {
+            const weatherInfo = document.getElementById("weatherInfo");
+
+            const temp = useFahrenheit ? weather.current.temp_f : weather.current.temp_c;
+            const condition = weather.current.condition.text;
+            const humidity = weather.current.humidity;
+            const wind = useFahrenheit ? weather.current.wind_mph : weather.current.wind_kph;
+            const uvIndex = weather.current.uv;
+
+            weatherInfo.innerHTML = `
+                <h2>${weather.location.name}, ${weather.location.country}</h2>
+                <p>Temperatura: ${temp}°${useFahrenheit ? "F" : "C"}</p>
+                <p>Condición: ${condition}</p>
+                <p>Humedad: ${humidity}%</p>
+                <p>Viento: ${wind} ${useFahrenheit ? "mph" : "km/h"}</p>
+                <p>Índice UV: ${uvIndex}</p>
+            `;
+        }
+
+        // Función para mostrar el pronóstico de los próximos días
+        function displayForecast(forecast) {
+            const forecastDiv = document.getElementById("forecast");
+            forecastDiv.innerHTML = `<h3>Pronóstico para los próximos días</h3>`;
+
+            forecast.forEach(day => {
+                const date = new Date(day.date);
+                const dayName = date.toLocaleDateString("es-ES", { weekday: "long" });
+                const temp = useFahrenheit ? day.day.avgtemp_f : day.day.avgtemp_c;
+                const icon = day.day.condition.icon;
+
+                forecastDiv.innerHTML += `
+                    <div class="forecast-day">
+                        <span>${dayName}</span>
+                        <span>${temp}°${useFahrenheit ? "F" : "C"}</span>
+                        <img src="https:${icon}" alt="weather icon" width="40" />
+                    </div>
+                `;
+            });
+        }
+
+        // Función para cambiar entre grados Celsius y Fahrenheit
+        function toggleUnits() {
+            useFahrenheit = !useFahrenheit;
+            const unitText = useFahrenheit ? "°F" : "°C";
+            document.getElementById("unitToggle").textContent = `Mostrar en ${unitText}`;
+            fetchWeather();
+        }
+    </script>
+</body>
+</html>
