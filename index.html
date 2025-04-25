@@ -8,6 +8,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
+    /* Estilos generales */
     :root {
       --primary-color: #00bcd4;
       --secondary-color: #2196f3;
@@ -285,7 +286,7 @@
               labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'],
               datasets: [{
                 label: 'Temperatura (°C)',
-                data: [temperature, temperature + 2, temperature - 1, temperature + 3, temperature + 1], // Puedes hacer que estos datos sean dinámicos también
+                data: [temperature, temperature + 2, temperature - 1, temperature + 3, temperature + 1], // Datos dinámicos de la API
                 borderColor: 'rgba(75, 192, 192, 1)',
                 fill: false,
               }]
