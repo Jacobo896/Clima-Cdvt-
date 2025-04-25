@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Clima Ciudad Victoria</title>
+  <title>Clima Mundial</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    /* Estilos generales */
     :root {
       --primary-color: #00bcd4;
       --secondary-color: #2196f3;
@@ -22,6 +21,7 @@
       --header-bg-light: #2196f3;
       --header-bg-dark: #121212;
     }
+
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
@@ -29,46 +29,65 @@
       color: var(--text-color-light);
       transition: background-color 0.3s, color 0.3s;
     }
+
     body.dark-mode {
       background-color: var(--bg-color-dark);
       color: var(--text-color-dark);
     }
+
     header {
       background: var(--header-bg-light);
       color: white;
-      padding: 15px;
+      padding: 20px;
       text-align: center;
       box-shadow: 0 4px 10px var(--widget-shadow);
     }
+
     body.dark-mode header {
       background: var(--header-bg-dark);
     }
+
+    header h1 {
+      font-size: 32px;
+      margin: 0;
+    }
+
+    header p {
+      font-size: 18px;
+    }
+
     .actions {
       text-align: center;
       margin: 20px;
     }
-    .actions button {
+
+    .actions input, .actions button {
+      padding: 12px 24px;
+      margin: 5px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
       background: var(--primary-color);
       color: white;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
       cursor: pointer;
-      font-size: 16px;
-      margin: 5px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       transition: background 0.3s ease;
     }
+
     .actions button:hover {
       background: #00acc1;
     }
+
+    .actions input {
+      width: 200px;
+    }
+
     .container {
       display: flex;
       flex-wrap: wrap;
-      gap: 20px;
       justify-content: center;
-      padding: 30px;
+      padding: 20px;
     }
+
     .widget {
       background: var(--widget-bg);
       border-radius: 10px;
@@ -76,22 +95,28 @@
       width: 300px;
       box-shadow: 0 4px 15px var(--widget-shadow);
       text-align: center;
+      margin: 15px;
     }
+
     body.dark-mode .widget {
       background: var(--widget-bg-dark);
       color: var(--text-color-dark);
     }
+
     .widget h3 {
-      margin-bottom: 15px;
       font-size: 22px;
+      margin-bottom: 15px;
     }
+
     .widget p {
       font-size: 18px;
     }
+
     canvas {
       margin-top: 15px;
       border-radius: 8px;
     }
+
     iframe {
       width: 100%;
       height: 350px;
@@ -99,33 +124,72 @@
       border-radius: 10px;
       box-shadow: 0 4px 15px var(--widget-shadow);
     }
-    .map-section, .news, .chart-section {
+
+    .map-section {
       margin-top: 40px;
     }
+
+    .news-section {
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    .news-section h2 {
+      margin-bottom: 20px;
+    }
+
+    .news-section ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    .news-section li {
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .news-section li strong {
+      color: var(--primary-color);
+    }
+
     .grid-container {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 20px;
     }
+
     .city-table {
       background: var(--widget-bg);
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
-    .news-section {
-      margin-top: 40px;
+
+    footer {
+      background: var(--header-bg-light);
+      padding: 20px;
+      color: white;
       text-align: center;
+      box-shadow: 0 4px 10px var(--widget-shadow);
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+
+    body.dark-mode footer {
+      background: var(--header-bg-dark);
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Clima Ciudad Victoria</h1>
+    <h1>Clima Mundial</h1>
     <p>Integrantes: López Martínez Jacobo</p>
   </header>
 
   <div class="actions">
+    <input type="text" id="cityInput" placeholder="Ingresa una ciudad" />
+    <button onclick="fetchWeather()">Obtener Clima</button>
     <button onclick="toggleDarkMode()">Modo Oscuro</button>
     <button onclick="downloadPDF()">Descargar PDF</button>
     <button onclick="window.print()">Imprimir Página</button>
@@ -170,6 +234,10 @@
     </div>
   </div>
 
+  <footer>
+    <p>Clima Mundial - 2025</p>
+  </footer>
+
   <script>
     // Modo oscuro y claro
     function toggleDarkMode() {
@@ -185,19 +253,47 @@
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
         pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
-        pdf.save("clima_ciudad_victoria.pdf");
+        pdf.save("clima_mundial.pdf");
       });
     }
 
     // Llamada a la API y otros datos dinámicos de la ciudad
     const apiKey = '40023f22ed2bd6b0fc5cc231f0c022ed';
-    const cities = [
-      { name: 'Monterrey', lat: 25.6751, lon: -100.3185 },
-      { name: 'Ciudad Victoria', lat: 23.7353, lon: -99.1452 }
-    ];
 
-    // Aquí deberías agregar la llamada API y mostrar las gráficas y datos relacionados
+    function fetchWeather() {
+      const city = document.getElementById('cityInput').value;
+      const apiURL = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=es`;
 
+      fetch(apiURL)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data); // Verifica que los datos se están obteniendo correctamente
+          const temperature = data.main.temp;
+          const humidity = data.main.humidity;
+          const windSpeed = data.wind.speed;
+
+          // Actualiza la interfaz con los datos obtenidos
+          document.getElementById('temp').textContent = `${temperature}°C`;
+          document.getElementById('humidity').textContent = `Humedad: ${humidity}%`;
+          document.getElementById('wind-speed').textContent = `Viento: ${windSpeed} m/s`;
+
+          // Llenamos las gráficas con los datos de la API
+          const ctx = document.getElementById('tempChart').getContext('2d');
+          const tempChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'],
+              datasets: [{
+                label: 'Temperatura (°C)',
+                data: [temperature, temperature + 2, temperature - 1, temperature + 3, temperature + 1], // Puedes hacer que estos datos sean dinámicos también
+                borderColor: 'rgba(75, 192, 192, 1)',
+                fill: false,
+              }]
+            }
+          });
+        })
+        .catch(error => console.error('Error al obtener los datos del clima:', error));
+    }
   </script>
 </body>
 </html>
