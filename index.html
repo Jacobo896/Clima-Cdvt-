@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MapPin, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function WeatherApp() {
@@ -10,7 +10,7 @@ export default function WeatherApp() {
   const [weather, setWeather] = useState(null);
   const [useFahrenheit, setUseFahrenheit] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
-  const [backgroundClass, setBackgroundClass] = useState("from-blue-500 to-indigo-800");
+  const [backgroundClass, setBackgroundClass] = useState("bg-blue-600");
 
   useEffect(() => {
     const savedLocation = localStorage.getItem("lastLocation");
@@ -20,12 +20,6 @@ export default function WeatherApp() {
     if (savedLocation) {
       setLocation(savedLocation);
       fetchWeather(savedLocation);
-    } else if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        await fetchWeatherByCoords(lat, lon);
-      });
     }
   }, []);
 
@@ -36,25 +30,11 @@ export default function WeatherApp() {
   };
 
   const setDynamicBackground = (conditionText) => {
-    if (conditionText.includes("rain")) setBackgroundClass("from-blue-800 to-gray-600");
-    else if (conditionText.includes("cloud")) setBackgroundClass("from-gray-500 to-gray-700");
+    if (conditionText.includes("rain")) setBackgroundClass("bg-gray-700");
+    else if (conditionText.includes("cloud")) setBackgroundClass("bg-gray-500");
     else if (conditionText.includes("sun") || conditionText.includes("clear"))
-      setBackgroundClass("from-yellow-400 to-orange-600");
-    else setBackgroundClass("from-blue-500 to-indigo-800");
-  };
-
-  const fetchWeatherByCoords = async (lat, lon) => {
-    try {
-      const res = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=a35443852cbb4454b61194436252504&q=${lat},${lon}&days=7&aqi=yes&alerts=yes&lang=es`);
-      const data = await res.json();
-      setWeather(data);
-      setLocation(data.location.name);
-      setDynamicBackground(data.current.condition.text.toLowerCase());
-      localStorage.setItem("lastLocation", data.location.name);
-      updateRecentSearches(data.location.name);
-    } catch (error) {
-      console.error("Error fetching weather by coordinates:", error);
-    }
+      setBackgroundClass("bg-yellow-400");
+    else setBackgroundClass("bg-blue-600");
   };
 
   const fetchWeather = async (loc = location) => {
@@ -74,33 +54,44 @@ export default function WeatherApp() {
   const toggleUnits = () => setUseFahrenheit(!useFahrenheit);
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${backgroundClass} text-white p-4`} style={{ backgroundImage: `url('/path/to/weather-image.jpg')` }}>
-      <header className="text-center mb-6">
-        <h1 className="text-4xl font-bold mb-1">Clima Mundial</h1>
-        <p className="text-lg">Equipo: Lopez Martínez Jacobo</p>
+    <div className={`min-h-screen text-white ${backgroundClass} py-12 px-6`}>
+      <header className="text-center mb-8">
+        <h1 className="text-5xl font-semibold mb-2">Clima Mundial</h1>
+        <p className="text-xl">Equipo: Lopez Martínez Jacobo</p>
       </header>
 
-      <div className="flex justify-center gap-2 mb-4">
+      <div className="flex justify-center mb-6 gap-4">
         <Input
           placeholder="Buscar ciudad o localidad"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="max-w-sm"
+          className="max-w-xs text-black p-2 rounded-md shadow-md"
         />
-        <Button onClick={() => fetchWeather()} className="bg-yellow-400 text-black hover:bg-yellow-500">
-          <Search className="mr-2 h-5 w-5" /> Buscar
+        <Button
+          onClick={() => fetchWeather()}
+          className="bg-orange-500 text-white hover:bg-orange-600 flex items-center justify-center p-2 rounded-md shadow-md"
+        >
+          <Search className="mr-2 h-5 w-5" />
+          Buscar
         </Button>
-        <Button onClick={toggleUnits} className="bg-white/20 border border-white">
+        <Button
+          onClick={toggleUnits}
+          className="bg-gray-800 text-white hover:bg-gray-700 p-2 rounded-md shadow-md"
+        >
           Mostrar en °{useFahrenheit ? "C" : "F"}
         </Button>
       </div>
 
       {recentSearches.length > 0 && (
-        <div className="text-center mb-6">
+        <div className="text-center mb-8">
           <p className="text-sm">Búsquedas recientes:</p>
           <div className="flex flex-wrap justify-center gap-2 mt-2">
             {recentSearches.map((city, i) => (
-              <Button key={i} onClick={() => fetchWeather(city)} className="bg-white/10 hover:bg-white/20 text-sm px-3">
+              <Button
+                key={i}
+                onClick={() => fetchWeather(city)}
+                className="bg-white/10 hover:bg-white/20 text-sm px-3"
+              >
                 {city}
               </Button>
             ))}
@@ -110,22 +101,22 @@ export default function WeatherApp() {
 
       {weather && (
         <motion.div
-          className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4"
+          className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="bg-white/10 backdrop-blur-md border border-white/30">
-            <CardContent className="p-4">
-              <h2 className="text-xl font-bold mb-2">{weather.location.name}, {weather.location.country}</h2>
-              <p>Temperatura: {useFahrenheit ? weather.current.temp_f : weather.current.temp_c}°{useFahrenheit ? "F" : "C"}</p>
-              <p>Condición: {weather.current.condition.text}</p>
-              <img src={weather.current.condition.icon} alt="condición" />
-              <p>Humedad: {weather.current.humidity}%</p>
-              <p>Viento: {useFahrenheit ? weather.current.wind_mph : weather.current.wind_kph} {useFahrenheit ? "mph" : "km/h"}</p>
-              <p>Índice UV: {weather.current.uv}</p>
+          <Card className="bg-white/20 p-6 rounded-xl shadow-xl border border-gray-200">
+            <CardContent>
+              <h2 className="text-2xl font-bold mb-2">{weather.location.name}, {weather.location.country}</h2>
+              <p className="text-lg">Temperatura: {useFahrenheit ? weather.current.temp_f : weather.current.temp_c}°{useFahrenheit ? "F" : "C"}</p>
+              <p className="text-lg">Condición: {weather.current.condition.text}</p>
+              <img src={weather.current.condition.icon} alt="condición" className="w-16 my-2" />
+              <p className="text-lg">Humedad: {weather.current.humidity}%</p>
+              <p className="text-lg">Viento: {useFahrenheit ? weather.current.wind_mph : weather.current.wind_kph} {useFahrenheit ? "mph" : "km/h"}</p>
+              <p className="text-lg">Índice UV: {weather.current.uv}</p>
               {weather.alerts?.alert?.length > 0 && (
-                <div className="mt-4 p-2 bg-red-600 text-white rounded">
+                <div className="mt-4 p-2 bg-red-600 text-white rounded-lg">
                   <p className="font-semibold">Alerta:</p>
                   <p>{weather.alerts.alert[0].headline}</p>
                 </div>
@@ -133,14 +124,14 @@ export default function WeatherApp() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-md border border-white/30">
-            <CardContent className="p-4">
-              <h2 className="text-xl font-bold mb-2">Pronóstico para los próximos días</h2>
+          <Card className="bg-white/20 p-6 rounded-xl shadow-xl border border-gray-200">
+            <CardContent>
+              <h2 className="text-2xl font-bold mb-2">Pronóstico para los próximos días</h2>
               {weather.forecast.forecastday.map((day, i) => (
-                <div key={i} className="flex justify-between items-center border-b border-white/20 py-2">
+                <div key={i} className="flex justify-between items-center border-b border-white/30 py-2">
                   <span>{day.date}</span>
                   <span>{useFahrenheit ? day.day.avgtemp_f : day.day.avgtemp_c}°{useFahrenheit ? "F" : "C"}</span>
-                  <img src={day.day.condition.icon} alt="icon" className="h-6" />
+                  <img src={day.day.condition.icon} alt="icon" className="w-10" />
                 </div>
               ))}
             </CardContent>
@@ -149,10 +140,10 @@ export default function WeatherApp() {
       )}
 
       <footer className="mt-12 text-center">
-        <h2 className="text-2xl font-semibold mb-4">Radar en Vivo</h2>
+        <h2 className="text-3xl font-semibold mb-4">Radar en Vivo</h2>
         <div className="w-full max-w-4xl mx-auto aspect-video">
           <iframe
-            className="w-full h-full rounded-2xl border-2 border-white"
+            className="w-full h-full rounded-xl shadow-lg"
             src="https://embed.windy.com/embed2.html?lat=20&lon=0&detailLat=20&detailLon=0&width=650&height=450&zoom=2&level=surface&overlay=rain&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1"
             frameBorder="0"
             allowFullScreen
