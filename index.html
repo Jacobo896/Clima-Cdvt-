@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clima Ciudad Victoria</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    /* Estilos generales */
+    :root {
+      --primary-color: #00bcd4;
+      --secondary-color: #2196f3;
+      --bg-color-light: #f4f7fa;
+      --bg-color-dark: #121212;
+      --text-color-light: #333;
+      --text-color-dark: #fff;
+      --widget-bg: #fff;
+      --widget-bg-dark: #333;
+      --widget-shadow: rgba(0, 0, 0, 0.2);
+      --header-bg-light: #2196f3;
+      --header-bg-dark: #121212;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: var(--bg-color-light);
+      color: var(--text-color-light);
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark-mode {
+      background-color: var(--bg-color-dark);
+      color: var(--text-color-dark);
+    }
+    header {
+      background: var(--header-bg-light);
+      color: white;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 4px 10px var(--widget-shadow);
+    }
+    body.dark-mode header {
+      background: var(--header-bg-dark);
+    }
+    .actions {
+      text-align: center;
+      margin: 20px;
+    }
+    .actions button {
+      background: var(--primary-color);
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: background 0.3s ease;
+    }
+    .actions button:hover {
+      background: #00acc1;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      padding: 30px;
+    }
+    .widget {
+      background: var(--widget-bg);
+      border-radius: 10px;
+      padding: 20px;
+      width: 300px;
+      box-shadow: 0 4px 15px var(--widget-shadow);
+      text-align: center;
+    }
+    body.dark-mode .widget {
+      background: var(--widget-bg-dark);
+      color: var(--text-color-dark);
+    }
+    .widget h3 {
+      margin-bottom: 15px;
+      font-size: 22px;
+    }
+    .widget p {
+      font-size: 18px;
+    }
+    canvas {
+      margin-top: 15px;
+      border-radius: 8px;
+    }
+    iframe {
+      width: 100%;
+      height: 350px;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px var(--widget-shadow);
+    }
+    .map-section, .news, .chart-section {
+      margin-top: 40px;
+    }
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .city-table {
+      background: var(--widget-bg);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .news-section {
+      margin-top: 40px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Clima Ciudad Victoria</h1>
+    <p>Integrantes: López Martínez Jacobo</p>
+  </header>
+
+  <div class="actions">
+    <button onclick="toggleDarkMode()">Modo Oscuro</button>
+    <button onclick="downloadPDF()">Descargar PDF</button>
+    <button onclick="window.print()">Imprimir Página</button>
+  </div>
+
+  <div id="capture-area">
+    <div class="container">
+      <div class="widget">
+        <h3>Temperatura Actual</h3>
+        <canvas id="tempChart"></canvas>
+      </div>
+      <div class="widget">
+        <h3>Índice UV</h3>
+        <canvas id="uvChart"></canvas>
+      </div>
+      <div class="widget">
+        <h3>Fase Lunar</h3>
+        <canvas id="moonChart"></canvas>
+      </div>
+    </div>
+
+    <div class="grid-container">
+      <div class="city-table" id="cities-weather">
+        <!-- Ciudad en tiempo real -->
+      </div>
+    </div>
+
+    <div class="map-section">
+      <h2>Mapa interactivo de alertas climáticas</h2>
+      <iframe src="https://embed.windy.com/embed2.html?lat=23.5&lon=-102&detailLat=23.5&detailLon=-102&width=100%25&height=450&zoom=5&level=surface&overlay=rain&menu=&message=true&marker=true&calendar=24&pressure=true&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1" allowfullscreen></iframe>
+    </div>
+
+    <div class="news-section">
+      <h2>Noticias del Clima</h2>
+      <ul>
+        <li><strong>Frente frío afecta el noreste:</strong> Lluvias intensas y descenso de temperatura en Tamaulipas y Nuevo León.</li>
+        <li><strong>Temporada de huracanes:</strong> Pronóstico sugiere una temporada activa en el Golfo de México. Prepararse con antelación.</li>
+        <li><strong>Alta presión domina el centro:</strong> Se esperan cielos despejados y temperaturas por arriba del promedio en Ciudad de México.</li>
+        <li><strong>Precipitación de nieve en el norte:</strong> Un frente frío ha traído nevadas a Chihuahua y Durango.</li>
+        <li><strong>Tormentas eléctricas en el Pacífico:</strong> Se reportan tormentas severas en las costas de Guerrero y Oaxaca.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Modo oscuro y claro
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    // Descarga de PDF
+    function downloadPDF() {
+      html2canvas(document.querySelector("#capture-area")).then(canvas => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
+        pdf.save("clima_ciudad_victoria.pdf");
+      });
+    }
+
+    // Llamada a la API y otros datos dinámicos de la ciudad
+    const apiKey = '40023f22ed2bd6b0fc5cc231f0c022ed';
+    const cities = [
+      { name: 'Monterrey', lat: 25.6751, lon: -100.3185 },
+      { name: 'Ciudad Victoria', lat: 23.7353, lon: -99.1452 }
+    ];
+
+    // Aquí deberías agregar la llamada API y mostrar las gráficas y datos relacionados
+
+  </script>
+</body>
+</html>
