@@ -273,12 +273,15 @@
           const humidity = data.main.humidity;
           const windSpeed = data.wind.speed;
 
-          // Actualiza la interfaz con los datos obtenidos
-          document.getElementById('temp').textContent = `${temperature}°C`;
-          document.getElementById('humidity').textContent = `Humedad: ${humidity}%`;
-          document.getElementById('wind-speed').textContent = `Viento: ${windSpeed} m/s`;
+          // Mostrar datos en la tabla de la ciudad
+          document.getElementById('cities-weather').innerHTML = `
+            <h3>Clima en ${data.name}</h3>
+            <p>Temperatura: ${temperature}°C</p>
+            <p>Humedad: ${humidity}%</p>
+            <p>Viento: ${windSpeed} m/s</p>
+          `;
 
-          // Llenamos las gráficas con los datos de la API
+          // Actualiza la interfaz con los datos obtenidos
           const ctx = document.getElementById('tempChart').getContext('2d');
           const tempChart = new Chart(ctx, {
             type: 'line',
