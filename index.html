@@ -1,303 +1,164 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Clima Mundial</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    /* Estilos generales */
-    :root {
-      --primary-color: #00bcd4;
-      --secondary-color: #2196f3;
-      --bg-color-light: #f4f7fa;
-      --bg-color-dark: #121212;
-      --text-color-light: #333;
-      --text-color-dark: #fff;
-      --widget-bg: #fff;
-      --widget-bg-dark: #333;
-      --widget-shadow: rgba(0, 0, 0, 0.2);
-      --header-bg-light: #2196f3;
-      --header-bg-dark: #121212;
-    }
+import React, { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { MapPin, Search } from "lucide-react";
+import { motion } from "framer-motion";
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      background-color: var(--bg-color-light);
-      color: var(--text-color-light);
-      transition: background-color 0.3s, color 0.3s;
-    }
+export default function WeatherApp() {
+  const [location, setLocation] = useState("");
+  const [weather, setWeather] = useState(null);
+  const [useFahrenheit, setUseFahrenheit] = useState(false);
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [backgroundClass, setBackgroundClass] = useState("from-blue-500 to-indigo-800");
 
-    body.dark-mode {
-      background-color: var(--bg-color-dark);
-      color: var(--text-color-dark);
-    }
+  useEffect(() => {
+    const savedLocation = localStorage.getItem("lastLocation");
+    const savedSearches = JSON.parse(localStorage.getItem("recentSearches")) || [];
+    setRecentSearches(savedSearches);
 
-    header {
-      background: var(--header-bg-light);
-      color: white;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 4px 10px var(--widget-shadow);
-    }
-
-    body.dark-mode header {
-      background: var(--header-bg-dark);
-    }
-
-    header h1 {
-      font-size: 32px;
-      margin: 0;
-    }
-
-    header p {
-      font-size: 18px;
-    }
-
-    .actions {
-      text-align: center;
-      margin: 20px;
-    }
-
-    .actions input, .actions button {
-      padding: 12px 24px;
-      margin: 5px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      background: var(--primary-color);
-      color: white;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    .actions button:hover {
-      background: #00acc1;
-    }
-
-    .actions input {
-      width: 200px;
-    }
-
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .widget {
-      background: var(--widget-bg);
-      border-radius: 10px;
-      padding: 20px;
-      width: 300px;
-      box-shadow: 0 4px 15px var(--widget-shadow);
-      text-align: center;
-      margin: 15px;
-    }
-
-    body.dark-mode .widget {
-      background: var(--widget-bg-dark);
-      color: var(--text-color-dark);
-    }
-
-    .widget h3 {
-      font-size: 22px;
-      margin-bottom: 15px;
-    }
-
-    .widget p {
-      font-size: 18px;
-    }
-
-    canvas {
-      margin-top: 15px;
-      border-radius: 8px;
-    }
-
-    iframe {
-      width: 100%;
-      height: 350px;
-      border: none;
-      border-radius: 10px;
-      box-shadow: 0 4px 15px var(--widget-shadow);
-    }
-
-    .map-section {
-      margin-top: 40px;
-    }
-
-    .news-section {
-      margin-top: 40px;
-      text-align: center;
-    }
-
-    .news-section h2 {
-      margin-bottom: 20px;
-    }
-
-    .news-section ul {
-      list-style-type: none;
-      padding: 0;
-    }
-
-    .news-section li {
-      margin-bottom: 10px;
-      font-size: 16px;
-    }
-
-    .news-section li strong {
-      color: var(--primary-color);
-    }
-
-    .grid-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-    }
-
-    .city-table {
-      background: var(--widget-bg);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    footer {
-      background: var(--header-bg-light);
-      padding: 20px;
-      color: white;
-      text-align: center;
-      box-shadow: 0 4px 10px var(--widget-shadow);
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-    }
-
-    body.dark-mode footer {
-      background: var(--header-bg-dark);
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Clima Mundial</h1>
-    <p>Integrantes: López Martínez Jacobo</p>
-  </header>
-
-  <div class="actions">
-    <input type="text" id="cityInput" placeholder="Ingresa una ciudad" />
-    <button onclick="fetchWeather()">Obtener Clima</button>
-    <button onclick="toggleDarkMode()">Modo Oscuro</button>
-    <button onclick="downloadPDF()">Descargar PDF</button>
-    <button onclick="window.print()">Imprimir Página</button>
-  </div>
-
-  <div id="capture-area">
-    <div class="container">
-      <div class="widget">
-        <h3>Temperatura Actual</h3>
-        <canvas id="tempChart"></canvas>
-      </div>
-      <div class="widget">
-        <h3>Índice UV</h3>
-        <canvas id="uvChart"></canvas>
-      </div>
-      <div class="widget">
-        <h3>Fase Lunar</h3>
-        <canvas id="moonChart"></canvas>
-      </div>
-    </div>
-
-    <div class="grid-container">
-      <div class="city-table" id="cities-weather">
-        <!-- Ciudad en tiempo real -->
-      </div>
-    </div>
-
-    <div class="map-section">
-      <h2>Mapa interactivo de alertas climáticas</h2>
-      <iframe src="https://embed.windy.com/embed2.html?lat=23.5&lon=-102&detailLat=23.5&detailLon=-102&width=100%25&height=450&zoom=5&level=surface&overlay=rain&menu=&message=true&marker=true&calendar=24&pressure=true&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1" allowfullscreen></iframe>
-    </div>
-
-    <div class="news-section">
-      <h2>Noticias del Clima</h2>
-      <ul>
-        <li><strong>Frente frío afecta el noreste:</strong> Lluvias intensas y descenso de temperatura en Tamaulipas y Nuevo León.</li>
-        <li><strong>Temporada de huracanes:</strong> Pronóstico sugiere una temporada activa en el Golfo de México. Prepararse con antelación.</li>
-        <li><strong>Alta presión domina el centro:</strong> Se esperan cielos despejados y temperaturas por arriba del promedio en Ciudad de México.</li>
-        <li><strong>Precipitación de nieve en el norte:</strong> Un frente frío ha traído nevadas a Chihuahua y Durango.</li>
-        <li><strong>Tormentas eléctricas en el Pacífico:</strong> Se reportan tormentas severas en las costas de Guerrero y Oaxaca.</li>
-      </ul>
-    </div>
-  </div>
-
-  <footer>
-    <p>Clima Mundial - 2025</p>
-  </footer>
-
-  <script>
-    // Modo oscuro y claro
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-    }
-
-    // Descarga de PDF
-    function downloadPDF() {
-      html2canvas(document.querySelector("#capture-area")).then(canvas => {
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
-        pdf.save("clima_mundial.pdf");
+    if (savedLocation) {
+      setLocation(savedLocation);
+      fetchWeather(savedLocation);
+    } else if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        await fetchWeatherByCoords(lat, lon);
       });
     }
+  }, []);
 
-    // Llamada a la API y otros datos dinámicos de la ciudad
-    const apiKey = '40023f22ed2bd6b0fc5cc231f0c022ed';
+  const updateRecentSearches = (newLocation) => {
+    let updated = [newLocation, ...recentSearches.filter((loc) => loc !== newLocation)].slice(0, 5);
+    setRecentSearches(updated);
+    localStorage.setItem("recentSearches", JSON.stringify(updated));
+  };
 
-    function fetchWeather() {
-      const city = document.getElementById('cityInput').value;
-      const apiURL = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=es`;
+  const setDynamicBackground = (conditionText) => {
+    if (conditionText.includes("rain")) setBackgroundClass("from-blue-800 to-gray-600");
+    else if (conditionText.includes("cloud")) setBackgroundClass("from-gray-500 to-gray-700");
+    else if (conditionText.includes("sun") || conditionText.includes("clear"))
+      setBackgroundClass("from-yellow-400 to-orange-600");
+    else setBackgroundClass("from-blue-500 to-indigo-800");
+  };
 
-      fetch(apiURL)
-        .then(response => response.json())
-        .then(data => {
-          console.log(data); // Verifica que los datos se están obteniendo correctamente
-          const temperature = data.main.temp;
-          const humidity = data.main.humidity;
-          const windSpeed = data.wind.speed;
-
-          // Mostrar datos en la tabla de la ciudad
-          document.getElementById('cities-weather').innerHTML = `
-            <h3>Clima en ${data.name}</h3>
-            <p>Temperatura: ${temperature}°C</p>
-            <p>Humedad: ${humidity}%</p>
-            <p>Viento: ${windSpeed} m/s</p>
-          `;
-
-          // Actualiza la interfaz con los datos obtenidos
-          const ctx = document.getElementById('tempChart').getContext('2d');
-          const tempChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'],
-              datasets: [{
-                label: 'Temperatura (°C)',
-                data: [temperature, temperature + 2, temperature - 1, temperature + 3, temperature + 1], // Datos dinámicos de la API
-                borderColor: 'rgba(75, 192, 192, 1)',
-                fill: false,
-              }]
-            }
-          });
-        })
-        .catch(error => console.error('Error al obtener los datos del clima:', error));
+  const fetchWeatherByCoords = async (lat, lon) => {
+    try {
+      const res = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=a35443852cbb4454b61194436252504&q=${lat},${lon}&days=7&aqi=yes&alerts=yes&lang=es`);
+      const data = await res.json();
+      setWeather(data);
+      setLocation(data.location.name);
+      setDynamicBackground(data.current.condition.text.toLowerCase());
+      localStorage.setItem("lastLocation", data.location.name);
+      updateRecentSearches(data.location.name);
+    } catch (error) {
+      console.error("Error fetching weather by coordinates:", error);
     }
-  </script>
-</body>
-</html>
+  };
+
+  const fetchWeather = async (loc = location) => {
+    if (!loc) return;
+    try {
+      const res = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=a35443852cbb4454b61194436252504&q=${loc}&days=7&aqi=yes&alerts=yes&lang=es`);
+      const data = await res.json();
+      setWeather(data);
+      localStorage.setItem("lastLocation", loc);
+      setDynamicBackground(data.current.condition.text.toLowerCase());
+      updateRecentSearches(loc);
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+    }
+  };
+
+  const toggleUnits = () => setUseFahrenheit(!useFahrenheit);
+
+  return (
+    <div className={`min-h-screen bg-gradient-to-br ${backgroundClass} text-white p-4`} style={{ backgroundImage: `url('/path/to/weather-image.jpg')` }}>
+      <header className="text-center mb-6">
+        <h1 className="text-4xl font-bold mb-1">Clima Mundial</h1>
+        <p className="text-lg">Equipo: Lopez Martínez Jacobo</p>
+      </header>
+
+      <div className="flex justify-center gap-2 mb-4">
+        <Input
+          placeholder="Buscar ciudad o localidad"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          className="max-w-sm"
+        />
+        <Button onClick={() => fetchWeather()} className="bg-yellow-400 text-black hover:bg-yellow-500">
+          <Search className="mr-2 h-5 w-5" /> Buscar
+        </Button>
+        <Button onClick={toggleUnits} className="bg-white/20 border border-white">
+          Mostrar en °{useFahrenheit ? "C" : "F"}
+        </Button>
+      </div>
+
+      {recentSearches.length > 0 && (
+        <div className="text-center mb-6">
+          <p className="text-sm">Búsquedas recientes:</p>
+          <div className="flex flex-wrap justify-center gap-2 mt-2">
+            {recentSearches.map((city, i) => (
+              <Button key={i} onClick={() => fetchWeather(city)} className="bg-white/10 hover:bg-white/20 text-sm px-3">
+                {city}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {weather && (
+        <motion.div
+          className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Card className="bg-white/10 backdrop-blur-md border border-white/30">
+            <CardContent className="p-4">
+              <h2 className="text-xl font-bold mb-2">{weather.location.name}, {weather.location.country}</h2>
+              <p>Temperatura: {useFahrenheit ? weather.current.temp_f : weather.current.temp_c}°{useFahrenheit ? "F" : "C"}</p>
+              <p>Condición: {weather.current.condition.text}</p>
+              <img src={weather.current.condition.icon} alt="condición" />
+              <p>Humedad: {weather.current.humidity}%</p>
+              <p>Viento: {useFahrenheit ? weather.current.wind_mph : weather.current.wind_kph} {useFahrenheit ? "mph" : "km/h"}</p>
+              <p>Índice UV: {weather.current.uv}</p>
+              {weather.alerts?.alert?.length > 0 && (
+                <div className="mt-4 p-2 bg-red-600 text-white rounded">
+                  <p className="font-semibold">Alerta:</p>
+                  <p>{weather.alerts.alert[0].headline}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 backdrop-blur-md border border-white/30">
+            <CardContent className="p-4">
+              <h2 className="text-xl font-bold mb-2">Pronóstico para los próximos días</h2>
+              {weather.forecast.forecastday.map((day, i) => (
+                <div key={i} className="flex justify-between items-center border-b border-white/20 py-2">
+                  <span>{day.date}</span>
+                  <span>{useFahrenheit ? day.day.avgtemp_f : day.day.avgtemp_c}°{useFahrenheit ? "F" : "C"}</span>
+                  <img src={day.day.condition.icon} alt="icon" className="h-6" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      <footer className="mt-12 text-center">
+        <h2 className="text-2xl font-semibold mb-4">Radar en Vivo</h2>
+        <div className="w-full max-w-4xl mx-auto aspect-video">
+          <iframe
+            className="w-full h-full rounded-2xl border-2 border-white"
+            src="https://embed.windy.com/embed2.html?lat=20&lon=0&detailLat=20&detailLon=0&width=650&height=450&zoom=2&level=surface&overlay=rain&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1"
+            frameBorder="0"
+            allowFullScreen
+          ></iframe>
+        </div>
+      </footer>
+    </div>
+  );
+}
