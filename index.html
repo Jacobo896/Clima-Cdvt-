@@ -8,9 +8,8 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
-      color: #333;
       margin: 0;
+      background-color: #f0f0f0;
     }
 
     header {
@@ -20,8 +19,8 @@
       color: white;
     }
 
-    #sound-btn {
-      background-color: #f44336;
+    .button {
+      background-color: #4CAF50;
       color: white;
       border: none;
       padding: 10px;
@@ -29,25 +28,40 @@
       border-radius: 5px;
     }
 
-    #sound-btn:hover {
-      background-color: #d32f2f;
+    .button:hover {
+      background-color: #45a049;
+    }
+
+    .weather-info {
+      text-align: center;
+      margin-top: 20px;
     }
 
     .weather-icon {
       font-size: 100px;
     }
 
-    .weather-info {
-      font-size: 18px;
-      margin-top: 20px;
+    .forecast {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 40px;
+    }
+
+    .forecast-day {
+      text-align: center;
+    }
+
+    #map {
+      width: 100%;
+      height: 400px;
     }
 
     .footer {
       text-align: center;
-      margin-top: 50px;
       padding: 20px;
       background-color: #4CAF50;
       color: white;
+      margin-top: 50px;
     }
 
     .background-animation {
@@ -115,32 +129,33 @@
   </audio>
 
   <header>
-    <h1>Página del Clima</h1>
+    <h1>Clima Actual</h1>
     <h3>Integrantes: López Martínez Jacobo</h3>
-    <button onclick="toggleSound()" id="sound-btn"><i class="wi wi-volume-up"></i> Silenciar sonido</button>
-  </header>
-  <main>
-    <div id="current-weather">
-      <!-- Aquí se mostrará el clima -->
-    </div>
     <input type="text" id="city-input" placeholder="Introduce la ciudad" />
-    <button onclick="updateCity()">Obtener clima</button>
+    <button class="button" onclick="updateCity()">Obtener clima</button>
+  </header>
 
-    <div id="weather-info" class="weather-info">
-      <!-- Aquí se mostrará más información -->
+  <main>
+    <div id="current-weather" class="weather-info">
+      <!-- Aquí se mostrará el clima actual -->
     </div>
 
-    <div id="forecast-frame"></div>
-    <div id="radar-frame"></div>
+    <div id="forecast" class="forecast">
+      <!-- Pronóstico de 7 días -->
+    </div>
+
+    <div id="map"></div>
   </main>
+
   <footer class="footer">
     <p>&copy; 2025 Clima Web - López Martínez Jacobo</p>
   </footer>
 
   <script>
-    let city = "Mexico City";
     let isMuted = false;
+    let city = "Mexico City";
 
+    // Función para cambiar el fondo según el día/noche
     function toggleDayNight() {
       const hour = new Date().getHours();
       const isNight = hour < 6 || hour > 18;
@@ -174,49 +189,74 @@
       }
     }
 
+    // Función para obtener el clima actual usando la API de OpenWeather
     async function getWeather(city) {
       try {
-        const response = await fetch(`https://wttr.in/${city}?format=%C+%t+%w`);
-        const weatherText = await response.text();
-        
-        const detailsResponse = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=YOUR_API_KEY&units=metric&lang=es`);
-        const weatherDetails = await detailsResponse.json();
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=YOUR_API_KEY&units=metric&lang=es`);
+        const weatherData = await response.json();
 
-        document.getElementById("current-weather").innerHTML = `<i class="wi ${getWeatherIcon(weatherText)} weather-icon"></i> ${weatherText}`;
-        document.getElementById("weather-info").innerHTML = `
-          <p><strong>Temperatura:</strong> ${weatherDetails.main.temp}°C</p>
-          <p><strong>Sensación Térmica:</strong> ${weatherDetails.main.feels_like}°C</p>
-          <p><strong>Humedad:</strong> ${weatherDetails.main.humidity}%</p>
-          <p><strong>Viento:</strong> ${weatherDetails.wind.speed} m/s</p>
-          <p><strong>Descripción:</strong> ${weatherDetails.weather[0].description}</p>
+        document.getElementById("current-weather").innerHTML = `
+          <i class="wi ${getWeatherIcon(weatherData.weather[0].main)} weather-icon"></i>
+          <p><strong>Temperatura:</strong> ${weatherData.main.temp}°C</p>
+          <p><strong>Sensación Térmica:</strong> ${weatherData.main.feels_like}°C</p>
+          <p><strong>Humedad:</strong> ${weatherData.main.humidity}%</p>
+          <p><strong>Viento:</strong> ${weatherData.wind.speed} m/s</p>
+          <p><strong>Descripción:</strong> ${weatherData.weather[0].description}</p>
         `;
-        updateAmbientAudio(weatherText);
+
+        updateAmbientAudio(weatherData.weather[0].description);
+        getForecast(city);
       } catch (error) {
         document.getElementById("current-weather").innerText = "No se pudo obtener el clima actual.";
       }
     }
 
-    function getWeatherIcon(description) {
-      description = description.toLowerCase();
-      if (description.includes("sol")) return "wi-day-sunny";
-      if (description.includes("nublado")) return "wi-cloudy";
-      if (description.includes("lluvia")) return "wi-rain";
-      if (description.includes("tormenta")) return "wi-thunderstorm";
-      if (description.includes("nieve")) return "wi-snow";
-      return "wi-day-cloudy";
+    // Función para obtener el pronóstico de los próximos 7 días
+    async function getForecast(city) {
+      try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast/daily?q=${city}&cnt=7&appid=YOUR_API_KEY&units=metric&lang=es`);
+        const forecastData = await response.json();
+
+        let forecastHTML = '';
+        forecastData.list.forEach((day, index) => {
+          const date = new Date(day.dt * 1000);
+          forecastHTML += `
+            <div class="forecast-day">
+              <p><strong>${date.toLocaleDateString()}</strong></p>
+              <i class="wi ${getWeatherIcon(day.weather[0].main)} weather-icon"></i>
+              <p>${day.temp.day}°C</p>
+            </div>
+          `;
+        });
+
+        document.getElementById("forecast").innerHTML = forecastHTML;
+      } catch (error) {
+        document.getElementById("forecast").innerText = "No se pudo obtener el pronóstico.";
+      }
     }
 
+    // Función para obtener el ícono adecuado basado en el clima
+    function getWeatherIcon(weather) {
+      switch(weather) {
+        case 'Clear': return 'wi-day-sunny';
+        case 'Clouds': return 'wi-cloudy';
+        case 'Rain': return 'wi-rain';
+        case 'Snow': return 'wi-snow';
+        case 'Thunderstorm': return 'wi-thunderstorm';
+        case 'Drizzle': return 'wi-sprinkle';
+        default: return 'wi-day-cloudy';
+      }
+    }
+
+    // Función para cambiar el sonido ambiental según el clima
     function updateAmbientAudio(description) {
       const audio = document.getElementById("ambient-audio");
       const source = document.getElementById("audio-source");
-      description = description.toLowerCase();
 
-      if (description.includes("lluvia")) {
+      if (description.includes("rain")) {
         source.src = "https://cdn.pixabay.com/audio/2022/03/24/audio_6f3f5db0e1.mp3";
-      } else if (description.includes("viento")) {
+      } else if (description.includes("clouds")) {
         source.src = "https://cdn.pixabay.com/audio/2022/03/11/audio_845b1485a4.mp3";
-      } else if (description.includes("tormenta")) {
-        source.src = "https://cdn.pixabay.com/audio/2023/03/21/audio_f7c8c7647f.mp3";
       } else {
         source.src = "https://cdn.pixabay.com/audio/2021/08/04/audio_f8b0c805a2.mp3";
       }
@@ -227,32 +267,6 @@
       }
     }
 
-    function toggleSound() {
-      const audio = document.getElementById("ambient-audio");
-      isMuted = !isMuted;
-      if (isMuted) {
-        audio.pause();
-        document.getElementById("sound-btn").innerHTML = `<i class="wi wi-volume-off"></i> Activar sonido`;
-      } else {
-        audio.play();
-        document.getElementById("sound-btn").innerHTML = `<i class="wi wi-volume-up"></i> Silenciar sonido`;
-      }
-    }
-
+    // Función para cambiar la ciudad
     function updateCity() {
       const input = document.getElementById("city-input").value;
-      if (!input) return;
-      city = input;
-      document.getElementById("city-name").innerText = city;
-      getWeather(city);
-
-      const citySlug = city.toLowerCase().replace(/ /g, '-');
-      document.getElementById("forecast-frame").src = `https://forecast7.com/es/0d0n0d0/${citySlug}/`;
-      document.getElementById("radar-frame").src = `https://embed.windy.com/embed2.html?search=${encodeURIComponent(city)}&width=650&height=450&zoom=5`;
-    }
-
-    getWeather(city);
-    toggleDayNight();
-  </script>
-</body>
-</html>
