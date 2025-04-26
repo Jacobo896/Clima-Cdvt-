@@ -33,7 +33,7 @@
     }
 
     .menu-toggle {
-      position: absolute;
+      position: fixed;
       bottom: 10px;
       left: 10px;
       z-index: 1002;
@@ -105,15 +105,13 @@
     #refresh-btn i {
       font-size: 16px;
     }
+
+    #climate-details {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
-  <div class="menu-toggle" onclick="togglePanel()">
-    <div></div>
-    <div></div>
-    <div></div>
-  </div>
-
   <header>López Martínez Jacobo</header>
 
   <div id="side-panel">
@@ -162,23 +160,49 @@
           .then(data => {
             const weather = data.weather[0].description;
             const temp = data.main.temp;
+            const feelsLike = data.main.feels_like;
             const humidity = data.main.humidity;
             const windSpeed = data.wind.speed;
             const pressure = data.main.pressure;
+            const sunrise = new Date(data.sys.sunrise * 1000).toLocaleTimeString();
+            const sunset = new Date(data.sys.sunset * 1000).toLocaleTimeString();
+            const visibility = data.visibility / 1000; // Convertir a km
+
             marker.bindPopup(`
               <b>${country.name}</b><br>
               Clima: ${weather}<br>
               Temperatura: ${temp}°C<br>
+              Sensación térmica: ${feelsLike}°C<br>
               Humedad: ${humidity}%<br>
               Velocidad del viento: ${windSpeed} m/s<br>
-              Presión: ${pressure} hPa
+              Presión: ${pressure} hPa<br>
+              Visibilidad: ${visibility} km<br>
+              Amanecer: ${sunrise}<br>
+              Atardecer: ${sunset}
             `).openPopup();
+            displayClimateDetails(weather, temp, feelsLike, humidity, windSpeed, pressure, visibility, sunrise, sunset);
           })
           .catch(err => {
             marker.bindPopup("Error al obtener el clima").openPopup();
           });
       });
     });
+
+    function displayClimateDetails(weather, temp, feelsLike, humidity, windSpeed, pressure, visibility, sunrise, sunset) {
+      const climateDetails = document.getElementById('climate-details');
+      climateDetails.innerHTML = `
+        <h3>Detalles del Clima</h3>
+        <p><strong>Clima:</strong> ${weather}</p>
+        <p><strong>Temperatura:</strong> ${temp}°C</p>
+        <p><strong>Sensación térmica:</strong> ${feelsLike}°C</p>
+        <p><strong>Humedad:</strong> ${humidity}%</p>
+        <p><strong>Velocidad del viento:</strong> ${windSpeed} m/s</p>
+        <p><strong>Presión:</strong> ${pressure} hPa</p>
+        <p><strong>Visibilidad:</strong> ${visibility} km</p>
+        <p><strong>Amanecer:</strong> ${sunrise}</p>
+        <p><strong>Atardecer:</strong> ${sunset}</p>
+      `;
+    }
 
     // Cargar noticias genéricas para pruebas
     function cargarNoticias() {
@@ -192,6 +216,8 @@
           { title: 'Alertas por huracán en el Caribe', link: 'https://www.bbc.com' },
           { title: 'Temperaturas récord en el norte de Europa', link: 'https://www.bbc.com' },
           { title: 'Se prevé tormenta tropical para la próxima semana', link: 'https://www.bbc.com' },
+          { title: 'El derretimiento de los glaciares afecta la biodiversidad', link: 'https://www.bbc.com' },
+          { title: 'Nuevas políticas para combatir la contaminación del aire', link: 'https://www.bbc.com' },
         ];
         exampleNews.forEach(item => {
           const div = document.createElement('div');
@@ -209,5 +235,12 @@
     setInterval(cargarNoticias, 300000);
 
   </script>
+
+  <!-- Colocar la barra de tres rayas (menu) en la parte inferior -->
+  <div class="menu-toggle" onclick="togglePanel()">
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
 </body>
 </html>
