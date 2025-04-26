@@ -141,21 +141,13 @@
       maxZoom: 18,
     }).addTo(map);
 
-    const apiKey = "fe7acc2b0ab267129d8f7426daf66a4d";
+    const apiKey = "fe7acc2b0ab267129d8f7426daf66a4d"; // Cambia esto por tu clave de API
 
-    // Selección de países con coordenadas aproximadas
-    const countries = [
-      { name: "México", lat: 23.6345, lon: -102.5528, countryCode: "MX" },
-      { name: "Estados Unidos", lat: 37.0902, lon: -95.7129, countryCode: "US" },
-      { name: "Francia", lat: 46.6034, lon: 1.8883, countryCode: "FR" },
-      { name: "España", lat: 40.4637, lon: -3.7492, countryCode: "ES" },
-    ];
-
-    // Crear un marcador para cada país
-    countries.forEach(country => {
-      const marker = L.marker([country.lat, country.lon]).addTo(map);
+    // Crear un marcador para cualquier ciudad o ubicación seleccionada
+    function addMarker(lat, lon, cityName) {
+      const marker = L.marker([lat, lon]).addTo(map);
       marker.on('click', () => {
-        fetch(`https://api.openweathermap.org/data/2.5/weather?q=${country.name}&appid=${apiKey}&units=metric&lang=es`)
+        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=es`)
           .then(response => response.json())
           .then(data => {
             const weather = data.weather[0].description;
@@ -169,7 +161,7 @@
             const visibility = data.visibility / 1000; // Convertir a km
 
             marker.bindPopup(`
-              <b>${country.name}</b><br>
+              <b>${cityName}</b><br>
               Clima: ${weather}<br>
               Temperatura: ${temp}°C<br>
               Sensación térmica: ${feelsLike}°C<br>
@@ -186,6 +178,20 @@
             marker.bindPopup("Error al obtener el clima").openPopup();
           });
       });
+    }
+
+    // Ejemplo de ciudades y sus coordenadas
+    const cities = [
+      { name: "México, Ciudad", lat: 19.4326, lon: -99.1332 },
+      { name: "Los Angeles, USA", lat: 34.0522, lon: -118.2437 },
+      { name: "París, Francia", lat: 48.8566, lon: 2.3522 },
+      { name: "Madrid, España", lat: 40.4168, lon: -3.7038 },
+      { name: "Tokio, Japón", lat: 35.6762, lon: 139.6503 }
+    ];
+
+    // Agregar marcadores para las ciudades
+    cities.forEach(city => {
+      addMarker(city.lat, city.lon, city.name);
     });
 
     function displayClimateDetails(weather, temp, feelsLike, humidity, windSpeed, pressure, visibility, sunrise, sunset) {
