@@ -4,12 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Clima - López Martínez Jacobo</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.10/css/weather-icons.min.css" integrity="sha512-FMLVmyoRhfrv07bwRe3pxQ0QqH27bDWRF7t1Gy4+FZXOCqaHRarKnf7YAlV+SPzzNsyhM+9F9kHCD8LchmUeBQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.10/css/weather-icons.min.css" />
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f0f0f0;
       color: #333;
+      margin: 0;
     }
 
     header {
@@ -34,6 +35,11 @@
 
     .weather-icon {
       font-size: 100px;
+    }
+
+    .weather-info {
+      font-size: 18px;
+      margin-top: 20px;
     }
 
     .footer {
@@ -115,10 +121,15 @@
   </header>
   <main>
     <div id="current-weather">
-      <!-- El clima actual se actualizará aquí -->
+      <!-- Aquí se mostrará el clima -->
     </div>
-    <button onclick="updateCity()">Actualizar clima</button>
-    <input type="text" id="city-input" placeholder="Introduce la ciudad">
+    <input type="text" id="city-input" placeholder="Introduce la ciudad" />
+    <button onclick="updateCity()">Obtener clima</button>
+
+    <div id="weather-info" class="weather-info">
+      <!-- Aquí se mostrará más información -->
+    </div>
+
     <div id="forecast-frame"></div>
     <div id="radar-frame"></div>
   </main>
@@ -166,9 +177,20 @@
     async function getWeather(city) {
       try {
         const response = await fetch(`https://wttr.in/${city}?format=%C+%t+%w`);
-        const text = await response.text();
-        document.getElementById("current-weather").innerHTML = `<i class="wi ${getWeatherIcon(text)} weather-icon"></i> ${text}`;
-        updateAmbientAudio(text);
+        const weatherText = await response.text();
+        
+        const detailsResponse = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=YOUR_API_KEY&units=metric&lang=es`);
+        const weatherDetails = await detailsResponse.json();
+
+        document.getElementById("current-weather").innerHTML = `<i class="wi ${getWeatherIcon(weatherText)} weather-icon"></i> ${weatherText}`;
+        document.getElementById("weather-info").innerHTML = `
+          <p><strong>Temperatura:</strong> ${weatherDetails.main.temp}°C</p>
+          <p><strong>Sensación Térmica:</strong> ${weatherDetails.main.feels_like}°C</p>
+          <p><strong>Humedad:</strong> ${weatherDetails.main.humidity}%</p>
+          <p><strong>Viento:</strong> ${weatherDetails.wind.speed} m/s</p>
+          <p><strong>Descripción:</strong> ${weatherDetails.weather[0].description}</p>
+        `;
+        updateAmbientAudio(weatherText);
       } catch (error) {
         document.getElementById("current-weather").innerText = "No se pudo obtener el clima actual.";
       }
