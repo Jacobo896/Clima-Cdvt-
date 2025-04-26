@@ -1,302 +1,275 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>El Clima de Ciudad Victoria y Tamaulipas</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clima Mundial</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #90dffe, #38a3d1);
+      color: #fff;
       margin: 0;
       padding: 0;
-      background-color: #f2f2f2;
-      transition: background-color 0.5s ease;
     }
-    header, footer {
-      background-color: #0077cc;
-      color: white;
-      text-align: center;
+    header {
+      background-color: rgba(0,0,0,0.3);
       padding: 20px;
+      text-align: center;
     }
-    main {
-      padding: 30px;
+    h1 {
+      margin: 0;
     }
-    h2 {
-      color: #0077cc;
-    }
-    section {
-      margin-bottom: 25px;
-    }
-    iframe {
-      width: 100%;
-      height: 400px;
-      border: none;
-      margin-top: 15px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: white;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-    }
-    thead {
-      background-color: #0077cc;
-      color: white;
-    }
-    .dark-mode {
-      background-color: #1e1e1e;
-      color: white;
-    }
-    .dark-mode header,
-    .dark-mode footer {
-      background-color: #333;
-      color: white;
-    }
-    .dark-mode h2 {
-      color: #00aaff;
-    }
-    .dark-mode table {
-      background-color: #2c2c2c;
-      color: white;
-    }
-    .dark-mode th {
-      background-color: #444;
-    }
-    #darkToggle, #printButton, #updateButton {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      padding: 10px;
-      background-color: #0077cc;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      z-index: 1000;
-    }
-    #printButton {
-      top: 50px;
-    }
-    #updateButton {
-      top: 90px;
-    }
-    .social-buttons {
-      margin-top: 20px;
+    nav {
       display: flex;
       justify-content: center;
+      gap: 15px;
+      background-color: rgba(0,0,0,0.2);
+      padding: 10px;
     }
-    .social-buttons a {
-      margin: 0 10px;
+    nav a {
+      color: white;
       text-decoration: none;
-      font-size: 20px;
-      color: #0077cc;
+      font-weight: bold;
     }
-    .notification-bar {
-      background-color: #ffcc00;
-      color: black;
-      padding: 15px;
+    nav a:hover {
+      text-decoration: underline;
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .search {
+      margin-bottom: 20px;
+    }
+    input, button {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      margin: 5px;
+    }
+    button {
+      background-color: #004e92;
+      color: white;
+      cursor: pointer;
+    }
+    .weather-card {
+      background-color: rgba(0,0,0,0.2);
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
       text-align: center;
-      position: fixed;
-      top: 0;
-      width: 100%;
-      z-index: 1000;
+      margin-top: 10px;
     }
-    .news-section {
-      background-color: #e6e6e6;
-      padding: 15px;
+    .forecast-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
       margin-top: 20px;
-      border-radius: 8px;
     }
-    .news-article {
-      margin-bottom: 10px;
+    .forecast-card {
+      background-color: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      padding: 10px;
+      width: 120px;
+      text-align: center;
     }
-    .news-article a {
-      color: #0077cc;
-      text-decoration: none;
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: rgba(0,0,0,0.2);
+      margin-top: 30px;
+    }
+    .extra-info {
+      margin-top: 10px;
+      font-size: 0.9em;
+    }
+    .icon {
+      width: 100px;
+      height: 100px;
+      margin: 10px auto;
+    }
+    canvas {
+      margin-top: 30px;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-  <!-- Alerta Meteorológica -->
-  <div class="notification-bar">
-    <strong>Alerta Meteorológica</strong>: Se espera clima caluroso para los próximos días. ¡Toma precauciones!
-  </div>
-
-  <!-- Botones de control -->
-  <button id="darkToggle">Modo oscuro</button>
-  <button id="printButton" onclick="window.print()">Imprimir / PDF</button>
-  <button id="updateButton" onclick="updateWeather()">Actualizar Clima</button>
-
-  <!-- Encabezado -->
+<body onload="getLocationWeather()">
   <header>
-    <h1>El Clima de Ciudad Victoria y Tamaulipas</h1>
-    <p>Trabajo en equipo - Integrante: López Martínez Jacobo</p>
+    <h1>Clima Mundial</h1>
+    <p>Consulta el clima actual de cualquier ciudad del mundo</p>
   </header>
-
-  <!-- Contenido principal -->
+  <nav>
+    <a href="#">Inicio</a>
+    <a href="#">Noticias del clima</a>
+    <a href="#">Consejos de clima</a>
+    <a href="#">Acerca de</a>
+  </nav>
   <main>
-    <section>
-      <h2>¿Dónde se ubica Ciudad Victoria?</h2>
-      <p>Ciudad Victoria es la capital del estado de Tamaulipas, en el noreste de México.</p>
-    </section>
-
-    <section>
-      <h2>Clima General</h2>
-      <p>Ciudad Victoria tiene un clima semiárido cálido, con veranos muy calurosos e inviernos suaves. Las temperaturas en verano pueden superar los 40°C.</p>
-    </section>
-
-    <section>
-      <h2>Índice UV Actual</h2>
-      <p>Índice UV: 8 (Alto) - Se recomienda evitar la exposición prolongada al sol entre las 10 a.m. y 4 p.m.</p>
-    </section>
-
-    <section>
-      <h2>Pronóstico por Hora</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Hora</th>
-            <th>Clima</th>
-            <th>Temperatura (°C)</th>
-            <th>Humedad (%)</th>
-            <th>Viento (km/h)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>10:00 AM</td>
-            <td>Soleado</td>
-            <td>35°C</td>
-            <td>60%</td>
-            <td>15 km/h</td>
-          </tr>
-          <tr>
-            <td>12:00 PM</td>
-            <td>Parcialmente nublado</td>
-            <td>38°C</td>
-            <td>55%</td>
-            <td>18 km/h</td>
-          </tr>
-          <tr>
-            <td>02:00 PM</td>
-            <td>Soleado</td>
-            <td>39°C</td>
-            <td>50%</td>
-            <td>20 km/h</td>
-          </tr>
-          <tr>
-            <td>04:00 PM</td>
-            <td>Parcialmente nublado</td>
-            <td>37°C</td>
-            <td>58%</td>
-            <td>15 km/h</td>
-          </tr>
-        </tbody>
-      </table>
-    </section>
-
-    <!-- Mapa de alertas meteorológicas -->
-    <section>
-      <h2>Mapa de Alertas Meteorológicas</h2>
-      <iframe src="https://www.weather.com/map?x=USA_TEX&zoom=7" width="100%" height="400px"></iframe>
-    </section>
-
-    <!-- Gráfico interactivo de condiciones climáticas -->
-    <section>
-      <h2>Gráfico Interactivo de Condiciones Climáticas</h2>
-      <div style="width: 100%; height: 300px;">
-        <canvas id="weatherConditionsChart"></canvas>
+    <div class="search">
+      <input type="text" id="cityInput" placeholder="Ingresa una ciudad">
+      <button onclick="getWeather()">Consultar</button>
+      <button onclick="toggleUnits()">Cambiar unidad</button>
+    </div>
+    <div class="weather-card" id="weatherCard" style="display: none;">
+      <h2 id="cityName"></h2>
+      <img id="weatherIcon" class="icon" src="" alt="Icono del clima" />
+      <p id="temperature"></p>
+      <p id="description"></p>
+      <p id="humidity"></p>
+      <p id="wind"></p>
+      <p id="localTime"></p>
+      <div class="extra-info">
+        <p id="pressure"></p>
+        <p id="visibility"></p>
+        <p id="feels_like"></p>
       </div>
-    </section>
-
-    <!-- Gráfico de tendencia del clima -->
-    <section>
-      <h2>Gráfico de Tendencia del Clima</h2>
-      <p>Gráfico de las tendencias del clima durante los últimos días:</p>
-      <div style="width: 100%; height: 300px;">
-        <canvas id="climateTrendChart"></canvas>
-      </div>
-    </section>
-
-    <!-- Noticias sobre el clima -->
-    <section class="news-section">
-      <h2>Últimas Noticias sobre el Clima</h2>
-      <div class="news-article">
-        <a href="https://www.example.com">Impacto de la ola de calor en la agricultura de Tamaulipas</a>
-      </div>
-      <div class="news-article">
-        <a href="https://www.example.com">Pronóstico de lluvias intensas para el noreste de México</a>
-      </div>
-      <div class="news-article">
-        <a href="https://www.example.com">Consejos para protegerte del sol durante el verano</a>
-      </div>
-    </section>
+    </div>
+    <canvas id="chart" width="400" height="200" style="display: none;"></canvas>
+    <h3 style="margin-top:30px;">Pronóstico de 5 días</h3>
+    <div id="forecastContainer" class="forecast-container"></div>
   </main>
-
-  <!-- Pie de página -->
   <footer>
-    <p>© 2025 - Todos los derechos reservados.</p>
+    <p>&copy; 2025 Clima Mundial - Datos proporcionados por OpenWeatherMap</p>
   </footer>
-
   <script>
-    // Gráfico interactivo de condiciones climáticas
-    var ctx = document.getElementById('weatherConditionsChart').getContext('2d');
-    var weatherConditionsChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['10 AM', '12 PM', '2 PM', '4 PM'],
-        datasets: [{
-          label: 'Temperatura (°C)',
-          data: [35, 38, 39, 37],
-          borderColor: 'rgba(75, 192, 192, 1)',
-          backgroundColor: 'rgba(75, 192, 192, 0.2)',
-          borderWidth: 1
-        }, {
-          label: 'Humedad (%)',
-          data: [60, 55, 50, 58],
-          borderColor: 'rgba(153, 102, 255, 1)',
-          backgroundColor: 'rgba(153, 102, 255, 0.2)',
-          borderWidth: 1
-        }, {
-          label: 'Viento (km/h)',
-          data: [15, 18, 20, 15],
-          borderColor: 'rgba(54, 162, 235, 1)',
-          backgroundColor: 'rgba(54, 162, 235, 0.2)',
-          borderWidth: 1
-        }]
-      }
-    });
+    let chart;
+    const apiKey = '91e62a860e56109b0da7d9583cc94414';
+    let unit = localStorage.getItem('unit') || 'metric'; // Default to Celsius
 
-    // Gráfico de tendencia del clima
-    var ctxTrend = document.getElementById('climateTrendChart').getContext('2d');
-    var climateTrendChart = new Chart(ctxTrend, {
-      type: 'line',
-      data: {
-        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'],
-        datasets: [{
-          label: 'Temperatura (°C)',
-          data: [35, 37, 36, 38, 39],
-          borderColor: 'rgba(255, 99, 132, 1)',
-          backgroundColor: 'rgba(255, 99, 132, 0.2)',
-          borderWidth: 1
-        }]
+    function getLocationWeather() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          await getWeather(lat, lon);
+        }, () => {
+          console.log("Geolocalización denegada");
+        });
       }
-    });
-
-    // Función para actualizar el clima
-    function updateWeather() {
-      alert("Actualizando el clima... Esta funcionalidad se conectaría a una API de clima.");
     }
 
-    // Cambio de modo oscuro
-    document.getElementById('darkToggle').addEventListener('click', function () {
-      document.body.classList.toggle('dark-mode');
-    });
-  </script>
+    async function getWeather(lat = null, lon = null) {
+      const city = document.getElementById('cityInput').value;
+      let currentUrl = '';
+      let forecastUrl = '';
 
+      if (lat && lon) {
+        currentUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&lang=es&units=${unit}`;
+        forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&lang=es&units=${unit}`;
+      } else {
+        currentUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&lang=es&units=${unit}`;
+        forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&lang=es&units=${unit}`;
+      }
+
+      try {
+        const [currentRes, forecastRes] = await Promise.all([
+          fetch(currentUrl),
+          fetch(forecastUrl)
+        ]);
+
+        if (!currentRes.ok || !forecastRes.ok) throw new Error("Ciudad no encontrada");
+
+        const currentData = await currentRes.json();
+        const forecastData = await forecastRes.json();
+
+        document.getElementById('weatherCard').style.display = 'block';
+        document.getElementById('cityName').textContent = currentData.name + ', ' + currentData.sys.country;
+        document.getElementById('temperature').textContent = `Temperatura: ${currentData.main.temp}°${unit === 'metric' ? 'C' : 'F'}`;
+        document.getElementById('description').textContent = `Clima: ${currentData.weather[0].description}`;
+        document.getElementById('humidity').textContent = `Humedad: ${currentData.main.humidity}%`;
+        document.getElementById('wind').textContent = `Viento: ${currentData.wind.speed} m/s`;
+        document.getElementById('pressure').textContent = `Presión: ${currentData.main.pressure} hPa`;
+        document.getElementById('visibility').textContent = `Visibilidad: ${currentData.visibility / 1000} km`;
+        document.getElementById('feels_like').textContent = `Sensación térmica: ${currentData.main.feels_like}°${unit === 'metric' ? 'C' : 'F'}`;
+
+        const icon = currentData.weather[0].icon;
+        document.getElementById('weatherIcon').src = `https://openweathermap.org/img/wn/${icon}@2x.png`;
+
+        const date = new Date(currentData.dt * 1000);
+        document.getElementById('localTime').textContent = `Hora local: ${date.toLocaleTimeString()}`;
+
+        const ctx = document.getElementById('chart').getContext('2d');
+        document.getElementById('chart').style.display = 'block';
+        if (chart) chart.destroy();
+
+        chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Temp', 'Sensación', 'Humedad', 'Presión', 'Viento'],
+            datasets: [{
+              label: 'Datos meteorológicos',
+              data: [
+                currentData.main.temp,
+                currentData.main.feels_like,
+                currentData.main.humidity,
+                currentData.main.pressure,
+                currentData.wind.speed
+              ],
+              backgroundColor: [
+                'rgba(255, 99, 132, 0.6)',
+                'rgba(54, 162, 235, 0.6)',
+                'rgba(255, 206, 86, 0.6)',
+                'rgba(75, 192, 192, 0.6)',
+                'rgba(153, 102, 255, 0.6)'
+              ],
+              borderColor: 'rgba(255, 255, 255, 0.8)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+
+        const forecastContainer = document.getElementById('forecastContainer');
+        forecastContainer.innerHTML = '';
+
+        const dailyData = {};
+        forecastData.list.forEach(item => {
+          const date = item.dt_txt.split(' ')[0];
+          if (!dailyData[date]) dailyData[date] = [];
+          dailyData[date].push(item);
+        });
+
+        Object.keys(dailyData).slice(0, 5).forEach(date => {
+          const items = dailyData[date];
+          const avgTemp = items.reduce((sum, item) => sum + item.main.temp, 0) / items.length;
+          const icon = items[0].weather[0].icon;
+          const desc = items[0].weather[0].description;
+
+          const card = document.createElement('div');
+          card.className = 'forecast-card';
+          card.innerHTML = `
+            <h4>${date}</h4>
+            <img src="https://openweathermap.org/img/wn/${icon}.png" alt="icon">
+            <p>${desc}</p>
+            <p>${avgTemp.toFixed(1)}°${unit === 'metric' ? 'C' : 'F'}</p>
+          `;
+          forecastContainer.appendChild(card);
+        });
+
+      } catch (error) {
+        alert(error.message);
+        document.getElementById('weatherCard').style.display = 'none';
+        document.getElementById('chart').style.display = 'none';
+        document.getElementById('forecastContainer').innerHTML = '';
+      }
+    }
+
+    function toggleUnits() {
+      unit = unit === 'metric' ? 'imperial' : 'metric';
+      localStorage.setItem('unit', unit);
+      getWeather();
+    }
+  </script>
 </body>
 </html>
