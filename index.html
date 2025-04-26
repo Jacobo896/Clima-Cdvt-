@@ -1,213 +1,293 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clima y Radar - Jacobo</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-
-        header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 10px 20px;
-            text-align: center;
-        }
-
-        header h1 {
-            margin: 0;
-        }
-
-        nav input {
-            padding: 10px;
-            width: 80%;
-            max-width: 400px;
-            margin-top: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        main {
-            padding: 20px;
-        }
-
-        section {
-            margin-bottom: 30px;
-        }
-
-        #weather-info, #historical-data {
-            background-color: white;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        #radar-map {
-            width: 100%;
-            height: 400px;
-        }
-
-        footer {
-            text-align: center;
-            padding: 10px;
-            background-color: #2c3e50;
-            color: white;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>El Clima de Ciudad Victoria y Tamaulipas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f2f2f2;
+      transition: background-color 0.5s ease;
+    }
+    header, footer {
+      background-color: #0077cc;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    main {
+      padding: 30px;
+    }
+    h2 {
+      color: #0077cc;
+    }
+    section {
+      margin-bottom: 25px;
+    }
+    iframe {
+      width: 100%;
+      height: 400px;
+      border: none;
+      margin-top: 15px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    thead {
+      background-color: #0077cc;
+      color: white;
+    }
+    .dark-mode {
+      background-color: #1e1e1e;
+      color: white;
+    }
+    .dark-mode header,
+    .dark-mode footer {
+      background-color: #333;
+      color: white;
+    }
+    .dark-mode h2 {
+      color: #00aaff;
+    }
+    .dark-mode table {
+      background-color: #2c2c2c;
+      color: white;
+    }
+    .dark-mode th {
+      background-color: #444;
+    }
+    #darkToggle, #printButton, #updateButton {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 10px;
+      background-color: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 1000;
+    }
+    #printButton {
+      top: 50px;
+    }
+    #updateButton {
+      top: 90px;
+    }
+    .social-buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .social-buttons a {
+      margin: 0 10px;
+      text-decoration: none;
+      font-size: 20px;
+      color: #0077cc;
+    }
+    .notification-bar {
+      background-color: #ffcc00;
+      color: black;
+      padding: 15px;
+      text-align: center;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+    .news-section {
+      background-color: #e6e6e6;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 8px;
+    }
+    .news-article {
+      margin-bottom: 10px;
+    }
+    .news-article a {
+      color: #0077cc;
+      text-decoration: none;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Clima y Radar</h1>
-        <nav>
-            <input type="text" id="search-bar" placeholder="Buscar ciudad o país..." oninput="searchWeather()">
-        </nav>
-    </header>
+  <div class="notification-bar">
+    <strong>Alerta Meteorológica</strong>: Se espera clima caluroso para los próximos días. ¡Toma precauciones!
+  </div>
 
-    <main>
-        <section id="weather-info">
-            <h2>Información del Clima</h2>
-            <div id="current-weather">
-                <p><strong>Temperatura:</strong> <span id="temp"></span> °C</p>
-                <p><strong>Condición:</strong> <span id="condition"></span></p>
-                <p><strong>Humedad:</strong> <span id="humidity"></span>%</p>
-                <p><strong>Viento:</strong> <span id="wind-speed"></span> km/h</p>
-            </div>
+  <button id="darkToggle">Modo oscuro</button>
+  <button id="printButton" onclick="window.print()">Imprimir / PDF</button>
+  <button id="updateButton" onclick="updateWeather()">Actualizar Clima</button>
 
-            <h3>Pronóstico Extendido</h3>
-            <div id="forecast">
-                <!-- Pronóstico extendido aquí -->
-            </div>
-        </section>
+  <header>
+    <h1>El Clima de Ciudad Victoria y Tamaulipas</h1>
+    <p>Trabajo en equipo - Integrante: López Martínez Jacobo</p>
+  </header>
 
-        <section id="radar">
-            <h2>Radar Meteorológico</h2>
-            <div id="radar-map" style="height: 400px;"></div>
-        </section>
+  <main>
+    <section>
+      <h2>¿Dónde se ubica Ciudad Victoria?</h2>
+      <p>Ciudad Victoria es la capital del estado de Tamaulipas, en el noreste de México.</p>
+    </section>
 
-        <section id="historical-data">
-            <h2>Datos Históricos</h2>
-            <button onclick="fetchHistoricalData()">Ver datos históricos</button>
-            <div id="historical-data-info"></div>
-        </section>
-    </main>
+    <section>
+      <h2>Clima General</h2>
+      <p>Ciudad Victoria tiene un clima semiárido cálido, con veranos muy calurosos e inviernos suaves. Las temperaturas en verano pueden superar los 40°C.</p>
+    </section>
 
-    <footer>
-        <p>Desarrollado por Jacobo</p>
-    </footer>
+    <section>
+      <h2>Índice UV Actual</h2>
+      <p>Índice UV: 8 (Alto) - Se recomienda evitar la exposición prolongada al sol entre las 10 a.m. y 4 p.m.</p>
+    </section>
 
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script>
-        // Función para obtener el clima de la ciudad introducida
-        function searchWeather() {
-            const city = document.getElementById('search-bar').value;
-            if (city.length >= 3) {
-                fetchWeatherData(city);
-            }
-        }
+    <section>
+      <h2>Pronóstico por Hora</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Clima</th>
+            <th>Temperatura (°C)</th>
+            <th>Humedad (%)</th>
+            <th>Viento (km/h)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>10:00 AM</td>
+            <td>Soleado</td>
+            <td>35°C</td>
+            <td>60%</td>
+            <td>15 km/h</td>
+          </tr>
+          <tr>
+            <td>12:00 PM</td>
+            <td>Parcialmente nublado</td>
+            <td>38°C</td>
+            <td>55%</td>
+            <td>18 km/h</td>
+          </tr>
+          <tr>
+            <td>02:00 PM</td>
+            <td>Soleado</td>
+            <td>39°C</td>
+            <td>50%</td>
+            <td>20 km/h</td>
+          </tr>
+          <tr>
+            <td>04:00 PM</td>
+            <td>Parcialmente nublado</td>
+            <td>37°C</td>
+            <td>58%</td>
+            <td>15 km/h</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
 
-        // Función que consulta la API de OpenWeatherMap
-        function fetchWeatherData(city) {
-            const apiKey = 'YOUR_API_KEY';  // Reemplaza con tu API Key de OpenWeatherMap
-            const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=es`;
+    <section>
+      <h2>Mapa de Alertas Meteorológicas</h2>
+      <iframe src="https://www.weather.com/map?x=USA_TEX&zoom=7" width="100%" height="400px"></iframe>
+    </section>
 
-            fetch(apiUrl)
-                .then(response => response.json())
-                .then(data => {
-                    displayWeather(data);
-                })
-                .catch(error => {
-                    console.error('Error al obtener los datos del clima:', error);
-                });
-        }
+    <section>
+      <h2>Gráfico Interactivo de Condiciones Climáticas</h2>
+      <p>Observa cómo varían la temperatura, la humedad y la velocidad del viento durante el día:</p>
+      <div style="width: 100%; height: 300px;">
+        <canvas id="weatherConditionsChart"></canvas>
+      </div>
+    </section>
 
-        // Muestra la información del clima en la página
-        function displayWeather(data) {
-            const temp = data.main.temp;
-            const condition = data.weather[0].description;
-            const humidity = data.main.humidity;
-            const windSpeed = data.wind.speed;
+    <section>
+      <h2>Gráfico de Tendencia del Clima</h2>
+      <p>Gráfico de las tendencias del clima durante los últimos días:</p>
+      <div style="width: 100%; height: 300px;">
+        <canvas id="climateTrendChart"></canvas>
+      </div>
+    </section>
 
-            document.getElementById('temp').innerText = temp;
-            document.getElementById('condition').innerText = condition;
-            document.getElementById('humidity').innerText = humidity;
-            document.getElementById('wind-speed').innerText = windSpeed;
+    <section class="news-section">
+      <h2>Últimas Noticias sobre el Clima</h2>
+      <div class="news-article">
+        <a href="https://www.example.com">Impacto de la ola de calor en la agricultura de Tamaulipas</a>
+      </div>
+      <div class="news-article">
+        <a href="https://www.example.com">Pronóstico de lluvias intensas para el noreste de México</a>
+      </div>
+      <div class="news-article">
+        <a href="https://www.example.com">Consejos para protegerte del sol durante el verano</a>
+      </div>
+    </section>
+  </main>
 
-            // Aquí puedes agregar el pronóstico extendido (7 días o más)
-            displayForecast(data.coord.lat, data.coord.lon);
-        }
+  <footer>
+    <p>© 2025 - Todos los derechos reservados.</p>
+  </footer>
 
-        // Función para cargar el mapa de radar
-        function loadRadarMap() {
-            const radarMap = L.map('radar-map').setView([20.0, 0.0], 2);  // Vista predeterminada
+  <script>
+    // Gráfico interactivo de condiciones climáticas
+    var ctx = document.getElementById('weatherConditionsChart').getContext('2d');
+    var weatherConditionsChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['10 AM', '12 PM', '2 PM', '4 PM'],
+        datasets: [{
+          label: 'Temperatura (°C)',
+          data: [35, 38, 39, 37],
+          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderWidth: 1
+        }, {
+          label: 'Humedad (%)',
+          data: [60, 55, 50, 58],
+          borderColor: 'rgba(153, 102, 255, 1)',
+          backgroundColor: 'rgba(153, 102, 255, 0.2)',
+          borderWidth: 1
+        }, {
+          label: 'Viento (km/h)',
+          data: [15, 18, 20, 15],
+          borderColor: 'rgba(54, 162, 235, 1)',
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderWidth: 1
+        }]
+      }
+    });
 
-            L.tileLayer('https://{s}.tile.openweathermap.org/map/rain/2/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://openweathermap.org">OpenWeatherMap</a>'
-            }).addTo(radarMap);
-        }
+    // Gráfico de tendencia del clima
+    var ctxTrend = document.getElementById('climateTrendChart').getContext('2d');
+    var climateTrendChart = new Chart(ctxTrend, {
+      type: 'line',
+      data: {
+        labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie'],
+        datasets: [{
+          label: 'Temperatura (°C)',
+          data: [35, 37, 36, 38, 39],
+          borderColor: 'rgba(255, 99, 132, 1)',
+          backgroundColor: 'rgba(255, 99, 132, 0.2)',
+          borderWidth: 1
+        }]
+      }
+    });
 
-        // Función para mostrar el pronóstico extendido
-        function displayForecast(lat, lon) {
-            const apiKey = 'YOUR_API_KEY';
-            const forecastUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric&lang=es`;
+    // Función para actualizar el clima
+    function updateWeather() {
+      alert("Actualizando el clima... Esta funcionalidad se conectaría a una API de clima.");
+    }
 
-            fetch(forecastUrl)
-                .then(response => response.json())
-                .then(data => {
-                    let forecastHTML = '<ul>';
-                    data.daily.forEach(day => {
-                        const date = new Date(day.dt * 1000);
-                        forecastHTML += `
-                            <li>
-                                <strong>${date.toDateString()}</strong>: 
-                                ${day.temp.day}°C - ${day.weather[0].description}
-                            </li>
-                        `;
-                    });
-                    forecastHTML += '</ul>';
-                    document.getElementById('forecast').innerHTML = forecastHTML;
-                })
-                .catch(error => {
-                    console.error('Error al obtener el pronóstico:', error);
-                });
-        }
+    // Cambio de modo oscuro
+    document.getElementById('darkToggle').addEventListener('click', function () {
+      document.body.classList.toggle('dark-mode');
+    });
+  </script>
 
-        // Función para obtener datos históricos del clima
-        function fetchHistoricalData() {
-            const city = document.getElementById('search-bar').value;
-            const apiKey = 'YOUR_API_KEY';  // Reemplaza con tu API Key de OpenWeatherMap
-            const historicalUrl = `https://api.openweathermap.org/data/2.5/onecall/timemachine?lat=35.6895&lon=139.6917&dt=1633024800&appid=${apiKey}&units=metric`;
-
-            fetch(historicalUrl)
-                .then(response => response.json())
-                .then(data => {
-                    displayHistoricalData(data);
-                })
-                .catch(error => {
-                    console.error('Error al obtener los datos históricos:', error);
-                });
-        }
-
-        // Muestra los datos históricos en la página
-        function displayHistoricalData(data) {
-            const historicalDataDiv = document.getElementById('historical-data-info');
-            historicalDataDiv.innerHTML = `
-                <p><strong>Temperatura:</strong> ${data.current.temp} °C</p>
-                <p><strong>Condición:</strong> ${data.current.weather[0].description}</p>
-                <p><strong>Humedad:</strong> ${data.current.humidity}%</p>
-                <p><strong>Viento:</strong> ${data.current.wind_speed} km/h</p>
-            `;
-        }
-
-        // Cargar el mapa de radar al iniciar
-        window.onload = function() {
-            loadRadarMap();
-        };
-    </script>
 </body>
-</html>
+    </html>
