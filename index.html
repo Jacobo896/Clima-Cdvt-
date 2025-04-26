@@ -117,7 +117,7 @@
   <header>López Martínez Jacobo</header>
 
   <div id="side-panel">
-    <h2>Noticias del clima (CONAGUA)</h2>
+    <h2>Noticias del clima (genéricas)</h2>
     <button id="refresh-btn" onclick="cargarNoticias()">
       <i class="fas fa-rotate-right"></i> Actualizar noticias
     </button>
@@ -137,7 +137,7 @@
       document.getElementById("side-panel").classList.toggle("open");
     }
 
-    const map = L.map('map').setView([23.6345, -102.5528], 5);
+    const map = L.map('map').setView([23.6345, -102.5528], 3); // Ajuste del zoom para ver más países
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
@@ -145,24 +145,19 @@
 
     const apiKey = "fe7acc2b0ab267129d8f7426daf66a4d";
 
-    // Ciudad de México, Guadalajara, Monterrey y Cancún
-    const cities = [
-      { name: "Ciudad de México", lat: 19.4326, lon: -99.1332 },
-      { name: "Guadalajara", lat: 20.6597, lon: -103.3496 },
-      { name: "Monterrey", lat: 25.6866, lon: -100.3161 },
-      { name: "Cancún", lat: 21.1619, lon: -86.8515 },
-      { name: "Tijuana", lat: 32.5149, lon: -117.0382 },
-      { name: "Puebla", lat: 19.0414, lon: -98.2063 },
-      { name: "Toluca", lat: 19.2823, lon: -99.6554 },
-      { name: "Mérida", lat: 21.1619, lon: -89.1658 },
-      { name: "Chihuahua", lat: 28.632, lon: -106.0691 }
+    // Selección de países con coordenadas aproximadas
+    const countries = [
+      { name: "México", lat: 23.6345, lon: -102.5528, countryCode: "MX" },
+      { name: "Estados Unidos", lat: 37.0902, lon: -95.7129, countryCode: "US" },
+      { name: "Francia", lat: 46.6034, lon: 1.8883, countryCode: "FR" },
+      { name: "España", lat: 40.4637, lon: -3.7492, countryCode: "ES" },
     ];
 
-    // Marcadores para las ciudades
-    cities.forEach(city => {
-      const marker = L.marker([city.lat, city.lon]).addTo(map);
+    // Crear un marcador para cada país
+    countries.forEach(country => {
+      const marker = L.marker([country.lat, country.lon]).addTo(map);
       marker.on('click', () => {
-        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${city.lat}&lon=${city.lon}&appid=${apiKey}&units=metric&lang=es`)
+        fetch(`https://api.openweathermap.org/data/2.5/weather?q=${country.name}&appid=${apiKey}&units=metric&lang=es`)
           .then(response => response.json())
           .then(data => {
             const weather = data.weather[0].description;
@@ -171,7 +166,7 @@
             const windSpeed = data.wind.speed;
             const pressure = data.main.pressure;
             marker.bindPopup(`
-              <b>${city.name}</b><br>
+              <b>${country.name}</b><br>
               Clima: ${weather}<br>
               Temperatura: ${temp}°C<br>
               Humedad: ${humidity}%<br>
@@ -185,27 +180,26 @@
       });
     });
 
-    // Actualización de noticias
+    // Cargar noticias genéricas para pruebas
     function cargarNoticias() {
       const newsDiv = document.getElementById('news');
       newsDiv.innerHTML = 'Actualizando...';
-      fetch('https://api.rss2json.com/v1/api.json?rss_url=https://smn.conagua.gob.mx/tools/rss/avisos.xml')
-        .then(res => res.json())
-        .then(data => {
-          newsDiv.innerHTML = '';
-          if (data.items.length > 0) {
-            document.getElementById('beep').play();
-          }
-          data.items.slice(0, 5).forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'news-item';
-            div.innerHTML = `<strong>${item.title}</strong><br><a href="${item.link}" target="_blank">Ver más</a>`;
-            newsDiv.appendChild(div);
-          });
-        })
-        .catch(() => {
-          newsDiv.innerHTML = 'No se pudieron cargar las noticias.';
+      // Noticias genéricas de ejemplo
+      setTimeout(() => {
+        newsDiv.innerHTML = '';
+        const exampleNews = [
+          { title: 'El cambio climático afecta más a las regiones costeras', link: 'https://www.bbc.com' },
+          { title: 'Alertas por huracán en el Caribe', link: 'https://www.bbc.com' },
+          { title: 'Temperaturas récord en el norte de Europa', link: 'https://www.bbc.com' },
+          { title: 'Se prevé tormenta tropical para la próxima semana', link: 'https://www.bbc.com' },
+        ];
+        exampleNews.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'news-item';
+          div.innerHTML = `<strong>${item.title}</strong><br><a href="${item.link}" target="_blank">Ver más</a>`;
+          newsDiv.appendChild(div);
         });
+      }, 1000);
     }
 
     // Cargar noticias iniciales
