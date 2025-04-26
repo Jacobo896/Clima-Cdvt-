@@ -1,28 +1,132 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Clima - López Martínez Jacobo</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.10/css/weather-icons.min.css" integrity="sha512-FMLVmyoRhfrv07bwRe3pxQ0QqH27bDWRF7t1Gy4+FZXOCqaHRarKnf7YAlV+SPzzNsyhM+9F9kHCD8LchmUeBQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
-    /* (Estilos sin cambios para ahorrar espacio) */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px;
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    #sound-btn {
+      background-color: #f44336;
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    #sound-btn:hover {
+      background-color: #d32f2f;
+    }
+
+    .weather-icon {
+      font-size: 100px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 50px;
+      padding: 20px;
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .background-animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .sun {
+      width: 100px;
+      height: 100px;
+      background-color: yellow;
+      border-radius: 50%;
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .cloud {
+      position: absolute;
+      background-color: #fff;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: cloudMove 30s linear infinite;
+    }
+
+    @keyframes cloudMove {
+      0% { left: -200px; }
+      100% { left: 100%; }
+    }
+
+    .star {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background-color: white;
+      border-radius: 50%;
+      box-shadow: 0 0 5px white;
+      animation: starTwinkle 1s infinite;
+    }
+
+    @keyframes starTwinkle {
+      0% { opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { opacity: 0.5; }
+    }
+
+    .night .star {
+      background-color: #f0f0f0;
+    }
+
   </style>
 </head>
 <body>
-  <div class="background-animation" id="background-animation"></div>  <audio id="ambient-audio" autoplay loop>
+  <div class="background-animation" id="background-animation"></div>
+
+  <audio id="ambient-audio" autoplay loop>
     <source id="audio-source" src="https://cdn.pixabay.com/audio/2021/08/04/audio_f8b0c805a2.mp3" type="audio/mpeg">
     Tu navegador no soporta audio HTML5.
-  </audio>  <header>
+  </audio>
+
+  <header>
     <h1>Página del Clima</h1>
     <h3>Integrantes: López Martínez Jacobo</h3>
     <button onclick="toggleSound()" id="sound-btn"><i class="wi wi-volume-up"></i> Silenciar sonido</button>
   </header>
   <main>
-    <!-- (Contenido principal sin cambios) -->
+    <div id="current-weather">
+      <!-- El clima actual se actualizará aquí -->
+    </div>
+    <button onclick="updateCity()">Actualizar clima</button>
+    <input type="text" id="city-input" placeholder="Introduce la ciudad">
+    <div id="forecast-frame"></div>
+    <div id="radar-frame"></div>
   </main>
   <footer class="footer">
     <p>&copy; 2025 Clima Web - López Martínez Jacobo</p>
-  </footer>  <script>
+  </footer>
+
+  <script>
     let city = "Mexico City";
     let isMuted = false;
 
@@ -127,5 +231,6 @@
 
     getWeather(city);
     toggleDayNight();
-  </script></body>
+  </script>
+</body>
 </html>
