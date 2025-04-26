@@ -258,4 +258,42 @@
       julio: { tmin: 25, tmax: 35, lluvia: 60, diasLluvia: 6, viento: 15 },
       agosto: { tmin: 25, tmax: 35, lluvia: 55, diasLluvia: 5, viento: 14 },
       septiembre: { tmin: 24, tmax: 33, lluvia: 60, diasLluvia: 6, viento: 13 },
-      octubre: { tmin: 22, tmax
+      octubre: { tmin: 22, tmax: 32, lluvia: 30, diasLluvia: 4, viento: 12 },
+      noviembre: { tmin: 18, tmax: 28, lluvia: 15, diasLluvia: 3, viento: 11 },
+      diciembre: { tmin: 15, tmax: 25, lluvia: 10, diasLluvia: 2, viento: 10 }
+    };
+
+    // Función para actualizar el clima mensual
+    function updateMonthlyWeather() {
+      const selectedMonth = document.getElementById("monthSelect").value;
+      const monthData = climaPorMes[selectedMonth];
+      document.getElementById("monthlyTable").innerHTML = `
+        <table>
+          <tr><th>Temperatura Mínima (°C)</th><td>${monthData.tmin}</td></tr>
+          <tr><th>Temperatura Máxima (°C)</th><td>${monthData.tmax}</td></tr>
+          <tr><th>Precipitación (%)</th><td>${monthData.lluvia}</td></tr>
+          <tr><th>Días con Lluvia</th><td>${monthData.diasLluvia}</td></tr>
+          <tr><th>Viento (km/h)</th><td>${monthData.viento}</td></tr>
+        </table>
+      `;
+      plotMonthGraph(monthData);
+    }
+
+    // Función para graficar clima mensual
+    function plotMonthGraph(monthData) {
+      const ctx = document.getElementById('monthChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Temperatura Mínima', 'Temperatura Máxima', 'Precipitación', 'Días con Lluvia', 'Viento'],
+          datasets: [{
+            label: 'Clima en Ciudad Victoria',
+            data: [monthData.tmin, monthData.tmax, monthData.lluvia, monthData.diasLluvia, monthData.viento],
+            backgroundColor: ['#81c784', '#64b5f6', '#ffeb3b', '#ff7043', '#4caf50'],
+            borderColor: '#388e3c',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales:
