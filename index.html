@@ -118,21 +118,26 @@
       text-decoration: none;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  <!-- Alerta Meteorológica -->
   <div class="notification-bar">
     <strong>Alerta Meteorológica</strong>: Se espera clima caluroso para los próximos días. ¡Toma precauciones!
   </div>
 
+  <!-- Botones de control -->
   <button id="darkToggle">Modo oscuro</button>
   <button id="printButton" onclick="window.print()">Imprimir / PDF</button>
   <button id="updateButton" onclick="updateWeather()">Actualizar Clima</button>
 
+  <!-- Encabezado -->
   <header>
     <h1>El Clima de Ciudad Victoria y Tamaulipas</h1>
     <p>Trabajo en equipo - Integrante: López Martínez Jacobo</p>
   </header>
 
+  <!-- Contenido principal -->
   <main>
     <section>
       <h2>¿Dónde se ubica Ciudad Victoria?</h2>
@@ -194,19 +199,21 @@
       </table>
     </section>
 
+    <!-- Mapa de alertas meteorológicas -->
     <section>
       <h2>Mapa de Alertas Meteorológicas</h2>
       <iframe src="https://www.weather.com/map?x=USA_TEX&zoom=7" width="100%" height="400px"></iframe>
     </section>
 
+    <!-- Gráfico interactivo de condiciones climáticas -->
     <section>
       <h2>Gráfico Interactivo de Condiciones Climáticas</h2>
-      <p>Observa cómo varían la temperatura, la humedad y la velocidad del viento durante el día:</p>
       <div style="width: 100%; height: 300px;">
         <canvas id="weatherConditionsChart"></canvas>
       </div>
     </section>
 
+    <!-- Gráfico de tendencia del clima -->
     <section>
       <h2>Gráfico de Tendencia del Clima</h2>
       <p>Gráfico de las tendencias del clima durante los últimos días:</p>
@@ -215,6 +222,7 @@
       </div>
     </section>
 
+    <!-- Noticias sobre el clima -->
     <section class="news-section">
       <h2>Últimas Noticias sobre el Clima</h2>
       <div class="news-article">
@@ -229,6 +237,7 @@
     </section>
   </main>
 
+  <!-- Pie de página -->
   <footer>
     <p>© 2025 - Todos los derechos reservados.</p>
   </footer>
@@ -290,4 +299,4 @@
   </script>
 
 </body>
-    </html>
+</html>
