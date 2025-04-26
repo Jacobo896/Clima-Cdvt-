@@ -137,10 +137,11 @@
     <p>&copy; 2025 Clima Mundial - Datos proporcionados por OpenWeatherMap</p>
   </footer>
   <script>
-    let chart;
     const apiKey = '91e62a860e56109b0da7d9583cc94414';
     let unit = localStorage.getItem('unit') || 'metric'; // Default to Celsius
+    let chart;
 
+    // Función para obtener la ubicación y el clima
     function getLocationWeather() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (position) => {
@@ -153,6 +154,7 @@
       }
     }
 
+    // Función para obtener el clima de la ciudad o de la ubicación
     async function getWeather(lat = null, lon = null) {
       const city = document.getElementById('cityInput').value;
       let currentUrl = '';
@@ -193,6 +195,7 @@
         const date = new Date(currentData.dt * 1000);
         document.getElementById('localTime').textContent = `Hora local: ${date.toLocaleTimeString()}`;
 
+        // Mostrar gráficos
         const ctx = document.getElementById('chart').getContext('2d');
         document.getElementById('chart').style.display = 'block';
         if (chart) chart.destroy();
@@ -230,6 +233,7 @@
           }
         });
 
+        // Pronóstico de 5 días
         const forecastContainer = document.getElementById('forecastContainer');
         forecastContainer.innerHTML = '';
 
@@ -265,6 +269,7 @@
       }
     }
 
+    // Alternar entre Celsius y Fahrenheit
     function toggleUnits() {
       unit = unit === 'metric' ? 'imperial' : 'metric';
       localStorage.setItem('unit', unit);
